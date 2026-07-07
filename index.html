@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clínac Odontologia — Cuidado que se vê no sorriso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,450&family=Libre+Franklin:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#FFFFFF;
+    --mist:#EDF6F1;
+    --mist-2:#E1F0E7;
+    --pine:#0E3B2C;
+    --pine-dark:#082A1F;
+    --emerald:#1F7A53;
+    --emerald-light:#2F9468;
+    --sage:#9FC4AE;
+    --ink:#10241B;
+    --line:#D9E8DF;
+    --paper:#FBFDFC;
+
+    --display:'Fraunces', serif;
+    --body:'Libre Franklin', sans-serif;
+    --mono:'Space Mono', monospace;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:var(--body);
+    color:var(--ink);
+    background:var(--paper);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img,svg{display:block;max-width:100%;}
+  a{color:inherit;text-decoration:none;}
+  ul{list-style:none;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+  .wrap{
+    max-width:1200px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  /* ---------- reveal ---------- */
+  .reveal{
+    opacity:0;
+    transform:translateY(18px);
+    transition:opacity .7s ease, transform .7s ease;
+  }
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none;}
+    *{animation:none !important;}
+  }
+
+  /* ---------- nav ---------- */
+  header{
+    position:sticky;top:0;z-index:100;
+    background:rgba(251,253,252,.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 32px;
+    max-width:1200px;margin:0 auto;
+  }
+  .logo{
+    font-family:var(--display);
+    font-size:22px;
+    font-weight:600;
+    color:var(--pine);
+    display:flex;align-items:center;gap:9px;
+    letter-spacing:.2px;
+  }
+  .logo .mark{
+    width:26px;height:26px;flex-shrink:0;
+  }
+  .nav-links{
+    display:flex;align-items:center;gap:36px;
+    font-size:14.5px;font-weight:500;
+    color:var(--pine-dark);
+  }
+  .nav-links a{position:relative;padding:4px 0;}
+  .nav-links a::after{
+    content:'';position:absolute;left:0;right:0;bottom:0;height:1.5px;
+    background:var(--emerald);transform:scaleX(0);transform-origin:left;
+    transition:transform .25s ease;
+  }
+  .nav-links a:hover::after{transform:scaleX(1);}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:12px 22px;
+    border-radius:100px;
+    font-size:14.5px;font-weight:600;
+    transition:all .2s ease;
+    white-space:nowrap;
+  }
+  .btn-primary{
+    background:var(--pine);color:var(--white);
+  }
+  .btn-primary:hover{background:var(--emerald);transform:translateY(-1px);}
+  .btn-outline{
+    border:1.5px solid var(--pine);color:var(--pine);
+  }
+  .btn-outline:hover{background:var(--pine);color:var(--white);}
+  .nav-cta{display:flex;align-items:center;gap:18px;}
+  .menu-toggle{display:none;font-size:26px;color:var(--pine);}
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:88px 0 60px;
+    position:relative;
+    background:
+      radial-gradient(ellipse 900px 500px at 85% -10%, var(--mist-2), transparent 60%);
+  }
+  .hero .wrap{
+    display:grid;
+    grid-template-columns:1.05fr .95fr;
+    gap:56px;
+    align-items:center;
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--emerald);
+    display:flex;align-items:center;gap:10px;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{
+    content:'';width:26px;height:1.5px;background:var(--emerald);
+  }
+  h1{
+    font-family:var(--display);
+    font-weight:450;
+    font-size:clamp(38px,4.6vw,58px);
+    line-height:1.06;
+    color:var(--pine-dark);
+    letter-spacing:-.01em;
+  }
+  h1 em{
+    font-style:italic;
+    font-weight:450;
+    color:var(--emerald);
+  }
+  .hero-sub{
+    margin-top:22px;
+    font-size:17.5px;
+    line-height:1.65;
+    color:#3A4F45;
+    max-width:460px;
+  }
+  .hero-actions{
+    margin-top:34px;
+    display:flex;gap:14px;flex-wrap:wrap;
+  }
+  .hero-stats{
+    margin-top:52px;
+    display:flex;gap:36px;
+    padding-top:28px;
+    border-top:1px solid var(--line);
+    max-width:480px;
+  }
+  .stat-num{
+    font-family:var(--display);
+    font-size:26px;color:var(--pine);
+  }
+  .stat-label{
+    font-size:12.5px;color:#5C7A6C;margin-top:4px;line-height:1.4;
+  }
+
+  .hero-art{
+    position:relative;
+    aspect-ratio:1/1.02;
+  }
+  .hero-art svg{width:100%;height:100%;}
+  .smile-path{
+    fill:none;
+    stroke:var(--pine);
+    stroke-width:2.5;
+    stroke-linecap:round;
+    stroke-dasharray:900;
+    stroke-dashoffset:900;
+    animation:draw 2.1s cubic-bezier(.65,0,.35,1) .3s forwards;
+  }
+  .smile-path.accent{stroke:var(--emerald);}
+  @keyframes draw{to{stroke-dashoffset:0;}}
+  .art-dot{
+    opacity:0;
+    animation:fadein .6s ease forwards;
+  }
+  @keyframes fadein{to{opacity:1;}}
+
+  /* ---------- trust strip ---------- */
+  .trust{
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    background:var(--white);
+  }
+  .trust .wrap{
+    display:flex;
+    justify-content:space-between;
+    padding:26px 32px;
+    flex-wrap:wrap;
+    gap:18px;
+  }
+  .trust-item{
+    display:flex;align-items:center;gap:10px;
+    font-size:13.5px;color:var(--pine-dark);font-weight:500;
+  }
+  .trust-item svg{width:18px;height:18px;color:var(--emerald);flex-shrink:0;}
+
+  /* ---------- section shell ---------- */
+  section{padding:104px 0;}
+  .section-head{
+    max-width:600px;
+    margin-bottom:64px;
+  }
+  .section-head h2{
+    font-family:var(--display);
+    font-weight:450;
+    font-size:clamp(30px,3.4vw,42px);
+    color:var(--pine-dark);
+    line-height:1.15;
+    margin-top:14px;
+  }
+  .section-head p{
+    margin-top:16px;
+    font-size:16px;color:#4B6156;line-height:1.6;
+  }
+
+  /* ---------- services : tooth chart grid ---------- */
+  .chart-note{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:#7E9A8C;
+    margin-top:-40px;
+    margin-bottom:44px;
+  }
+  .services-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:18px;
+    overflow:hidden;
+  }
+  .service-card{
+    background:var(--white);
+    padding:36px 30px;
+    transition:background .25s ease;
+    position:relative;
+  }
+  .service-card:hover{background:var(--mist);}
+  .service-fdi{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--emerald);
+    background:var(--mist);
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    letter-spacing:.03em;
+  }
+  .service-card h3{
+    font-family:var(--display);
+    font-size:21px;font-weight:600;
+    color:var(--pine-dark);
+    margin-top:20px;
+  }
+  .service-card p{
+    margin-top:10px;
+    font-size:14.5px;line-height:1.6;
+    color:#546E62;
+  }
+  .service-tooth{
+    position:absolute;top:32px;right:28px;
+    width:30px;height:30px;
+    color:var(--sage);
+    opacity:.9;
+  }
+
+  /* ---------- about ---------- */
+  .about{background:var(--pine-dark);color:var(--white);}
+  .about .wrap{
+    display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:center;
+  }
+  .about .eyebrow{color:var(--sage);}
+  .about .eyebrow::before{background:var(--sage);}
+  .about h2{
+    font-family:var(--display);font-weight:450;
+    font-size:clamp(30px,3.4vw,40px);
+    line-height:1.18;
+    margin-top:14px;
+  }
+  .about h2 em{color:var(--sage);font-style:italic;}
+  .diff-list{margin-top:36px;display:flex;flex-direction:column;gap:22px;}
+  .diff-item{display:flex;gap:16px;align-items:flex-start;}
+  .diff-num{
+    font-family:var(--mono);font-size:13px;color:var(--sage);
+    padding-top:3px;flex-shrink:0;width:28px;
+  }
+  .diff-item h4{font-size:16.5px;font-weight:600;}
+  .diff-item p{font-size:14px;color:#B9CFC1;margin-top:5px;line-height:1.55;}
+
+  .about-visual{
+    position:relative;
+    aspect-ratio:4/5;
+    border-radius:22px;
+    background:linear-gradient(155deg,#123F2E,#0A2C20);
+    border:1px solid rgba(255,255,255,.08);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .about-visual svg{width:72%;}
+
+  /* ---------- testimonials ---------- */
+  .testimonials{background:var(--mist);}
+  .test-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:26px;
+  }
+  .test-card{
+    background:var(--white);
+    border-radius:16px;
+    padding:32px 28px;
+    border:1px solid var(--line);
+  }
+  .test-quote{
+    font-family:var(--display);
+    font-style:italic;
+    font-size:17px;
+    line-height:1.55;
+    color:var(--pine-dark);
+  }
+  .test-foot{
+    margin-top:22px;display:flex;align-items:center;gap:12px;
+  }
+  .test-avatar{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--pine);
+    color:var(--white);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:13px;
+  }
+  .test-name{font-size:13.5px;font-weight:600;color:var(--pine-dark);}
+  .test-role{font-size:12px;color:#6E8B7C;}
+  .stars{color:var(--emerald);font-size:13px;letter-spacing:2px;margin-bottom:14px;}
+
+  /* ---------- booking / cta ---------- */
+  .booking{
+    background:var(--white);
+  }
+  .booking-box{
+    background:var(--pine);
+    border-radius:26px;
+    padding:64px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:56px;
+    color:var(--white);
+    position:relative;
+    overflow:hidden;
+  }
+  .booking-box::before{
+    content:'';position:absolute;right:-60px;top:-60px;
+    width:260px;height:260px;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.06), transparent 70%);
+  }
+  .booking-left .eyebrow{color:var(--sage);}
+  .booking-left .eyebrow::before{background:var(--sage);}
+  .booking-left h2{
+    font-family:var(--display);font-weight:450;
+    font-size:clamp(28px,3vw,36px);line-height:1.2;margin-top:14px;
+  }
+  .booking-left p{margin-top:16px;color:#C6D9CD;font-size:15px;line-height:1.6;max-width:380px;}
+  .booking-left .btn{margin-top:30px;}
+
+  form{display:flex;flex-direction:column;gap:14px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  input,select{
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:10px;
+    padding:13px 15px;
+    color:var(--white);
+    font-size:14px;font-family:inherit;
+    width:100%;
+  }
+  input::placeholder{color:#9BB6A8;}
+  select option{color:var(--ink);}
+  form .btn-primary{
+    background:var(--white);color:var(--pine);
+    margin-top:6px;justify-content:center;
+  }
+  form .btn-primary:hover{background:var(--sage);color:var(--pine-dark);}
+  .form-note{font-size:11.5px;color:#9BB6A8;margin-top:2px;}
+
+  /* ---------- footer ---------- */
+  footer{
+    background:var(--pine-dark);
+    color:#B9CFC1;
+    padding:64px 0 28px;
+  }
+  .foot-grid{
+    display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;
+    padding-bottom:44px;border-bottom:1px solid rgba(255,255,255,.1);
+  }
+  .foot-logo{
+    font-family:var(--display);font-size:21px;color:var(--white);
+    display:flex;align-items:center;gap:8px;
+  }
+  .foot-logo svg{width:22px;height:22px;}
+  .foot-desc{margin-top:14px;font-size:13.5px;line-height:1.6;max-width:260px;}
+  .foot-col h5{
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--sage);margin-bottom:16px;
+  }
+  .foot-col ul{display:flex;flex-direction:column;gap:11px;font-size:13.5px;}
+  .foot-col a:hover{color:var(--white);}
+  .foot-bottom{
+    padding-top:24px;display:flex;justify-content:space-between;
+    font-size:12.5px;color:#7E9A8C;flex-wrap:wrap;gap:10px;
+  }
+
+  /* ---------- floating whatsapp ---------- */
+  .wa-float{
+    position:fixed;
+    right:26px;
+    bottom:26px;
+    z-index:200;
+    width:60px;height:60px;
+    border-radius:50%;
+    background:var(--emerald);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 10px 28px rgba(14,59,44,.35), 0 2px 8px rgba(14,59,44,.2);
+    transition:transform .2s ease, background .2s ease, box-shadow .2s ease;
+    animation:wa-pop .5s ease .8s both, wa-pulse 2.6s ease-in-out 2s infinite;
+  }
+  .wa-float:hover{
+    background:var(--pine);
+    transform:translateY(-3px) scale(1.05);
+    box-shadow:0 14px 32px rgba(14,59,44,.4), 0 2px 8px rgba(14,59,44,.25);
+  }
+  .wa-float svg{width:29px;height:29px;color:var(--white);}
+  .wa-tooltip{
+    position:absolute;
+    right:72px;
+    top:50%;
+    transform:translateY(-50%) translateX(6px);
+    background:var(--pine-dark);
+    color:var(--white);
+    font-size:13px;
+    font-weight:500;
+    padding:9px 14px;
+    border-radius:8px;
+    white-space:nowrap;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  .wa-tooltip::after{
+    content:'';
+    position:absolute;
+    left:100%;top:50%;
+    transform:translateY(-50%);
+    border:6px solid transparent;
+    border-left-color:var(--pine-dark);
+  }
+  .wa-float:hover .wa-tooltip{
+    opacity:1;
+    transform:translateY(-50%) translateX(0);
+  }
+  @keyframes wa-pop{
+    from{opacity:0;transform:scale(.4);}
+    to{opacity:1;transform:scale(1);}
+  }
+  @keyframes wa-pulse{
+    0%,100%{box-shadow:0 10px 28px rgba(14,59,44,.35), 0 0 0 0 rgba(31,122,83,.35);}
+    50%{box-shadow:0 10px 28px rgba(14,59,44,.35), 0 0 0 12px rgba(31,122,83,0);}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .wa-float{animation:none;}
+  }
+  @media (max-width:560px){
+    .wa-float{width:54px;height:54px;right:18px;bottom:18px;}
+    .wa-float svg{width:26px;height:26px;}
+    .wa-tooltip{display:none;}
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:920px){
+    .nav-links{display:none;}
+    .menu-toggle{display:block;}
+    .hero .wrap{grid-template-columns:1fr;}
+    .hero-art{max-width:340px;margin:0 auto;order:-1;}
+    .services-grid{grid-template-columns:repeat(2,1fr);}
+    .about .wrap{grid-template-columns:1fr;}
+    .about-visual{max-width:320px;margin:0 auto;}
+    .test-grid{grid-template-columns:1fr;}
+    .booking-box{grid-template-columns:1fr;padding:40px 28px;}
+    .foot-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 20px;}
+    .services-grid{grid-template-columns:1fr;}
+    .hero-stats{gap:22px;flex-wrap:wrap;}
+    .form-row{grid-template-columns:1fr;}
+    .foot-grid{grid-template-columns:1fr;gap:30px;}
+    section{padding:72px 0;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="wrap">
+    <a href="#top" class="logo">
+      <svg class="mark" viewBox="0 0 26 26" fill="none">
+        <path d="M13 4c-3 0-5 2-5 5.5 0 3 1.3 5.6 1.3 8.3 0 1.3.6 2.2 1.6 2.2.9 0 1.3-.7 1.6-2 .3-1.2.4-2.4 1-2.4s.7 1.2 1 2.4c.3 1.3.7 2 1.6 2 1 0 1.6-.9 1.6-2.2 0-2.7 1.3-5.3 1.3-8.3C18 6 16 4 13 4z" stroke="#0E3B2C" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+      Clínac
+    </a>
+    <ul class="nav-links">
+      <li><a href="#tratamentos">Tratamentos</a></li>
+      <li><a href="#sobre">Sobre</a></li>
+      <li><a href="#depoimentos">Depoimentos</a></li>
+      <li><a href="#contato">Contato</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="#contato" class="btn btn-primary">Agendar consulta</a>
+      <span class="menu-toggle">☰</span>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero" style="padding-top:88px;">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">Odontologia em Belo Horizonte</div>
+        <h1>Um sorriso bem cuidado <em>se nota</em> antes de ser mostrado.</h1>
+        <p class="hero-sub">Da limpeza de rotina aos tratamentos mais delicados, a Clínac acompanha a saúde bucal da sua família com planejamento claro, tecnologia digital e uma equipe que explica cada etapa antes de agir.</p>
+        <div class="hero-actions">
+          <a href="#contato" class="btn btn-primary">Agendar avaliação</a>
+          <a href="#tratamentos" class="btn btn-outline">Ver tratamentos</a>
+        </div>
+        <div class="hero-stats">
+          <div>
+            <div class="stat-num">12 anos</div>
+            <div class="stat-label">cuidando de sorrisos<br>em BH</div>
+          </div>
+          <div>
+            <div class="stat-num">4.9 / 5</div>
+            <div class="stat-label">média em mais de<br>800 avaliações</div>
+          </div>
+          <div>
+            <div class="stat-num">6</div>
+            <div class="stat-label">especialidades sob<br>o mesmo teto</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-art">
+        <svg viewBox="0 0 420 440" fill="none">
+          <!-- abstract smile arc -->
+          <path class="smile-path" d="M60 160 Q210 340 360 160" />
+          <path class="smile-path accent" style="animation-delay:.6s" d="M95 175 Q210 300 325 175" />
+          <!-- tooth marks along the arc -->
+          <g stroke="#0E3B2C" stroke-width="1.4" stroke-linecap="round">
+            <path class="art-dot" style="animation-delay:1.9s" d="M115 190 L112 210"/>
+            <path class="art-dot" style="animation-delay:2s" d="M150 218 L148 240"/>
+            <path class="art-dot" style="animation-delay:2.1s" d="M190 236 L189 259"/>
+            <path class="art-dot" style="animation-delay:2.2s" d="M230 236 L231 259"/>
+            <path class="art-dot" style="animation-delay:2.3s" d="M270 218 L272 240"/>
+            <path class="art-dot" style="animation-delay:2.4s" d="M305 190 L308 210"/>
+          </g>
+          <circle class="art-dot" style="animation-delay:2.6s" cx="70" cy="90" r="3" fill="#9FC4AE"/>
+          <circle class="art-dot" style="animation-delay:2.8s" cx="350" cy="100" r="4" fill="#1F7A53"/>
+          <circle class="art-dot" style="animation-delay:3s" cx="345" cy="330" r="3" fill="#9FC4AE"/>
+          <circle class="art-dot" style="animation-delay:3.1s" cx="60" cy="310" r="4" fill="#1F7A53"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST STRIP -->
+  <div class="trust">
+    <div class="wrap">
+      <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Escaneamento digital sem moldagem</div>
+      <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Atendimento infantil especializado</div>
+      <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Parcelamento em até 12x</div>
+      <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Convênios e particular</div>
+    </div>
+  </div>
+
+  <!-- TREATMENTS -->
+  <section id="tratamentos">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Tratamentos</div>
+        <h2>Cada dente tem sua história. Nós cuidamos de todas elas.</h2>
+        <p>Organizamos nossos tratamentos como um dentista lê uma arcada: por região e função. Veja onde cada cuidado atua.</p>
+      </div>
+
+      <div class="services-grid reveal">
+        <div class="service-card">
+          <span class="service-fdi">18—48 · profilaxia</span>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <h3>Limpeza & Prevenção</h3>
+          <p>Remoção de tártaro, aplicação de flúor e orientação de higiene para manter a arcada inteira saudável.</p>
+        </div>
+
+        <div class="service-card">
+          <span class="service-fdi">11—22 · estética</span>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <h3>Clareamento Dental</h3>
+          <p>Protocolo a laser ou moldeira caseira, focado nos dentes que aparecem no sorriso.</p>
+        </div>
+
+        <div class="service-card">
+          <span class="service-fdi">arcada completa</span>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <h3>Ortodontia</h3>
+          <p>Aparelho fixo ou alinhadores transparentes, com acompanhamento mensal do movimento dos dentes.</p>
+        </div>
+
+        <div class="service-card">
+          <span class="service-fdi">unitário · cirúrgico</span>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <h3>Implantodontia</h3>
+          <p>Reposição de dentes perdidos com planejamento guiado por imagem, do implante à coroa final.</p>
+        </div>
+
+        <div class="service-card">
+          <span class="service-fdi">dentição decídua</span>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <h3>Odontopediatria</h3>
+          <p>Consultas lúdicas para os pequenos, pensadas para criar uma relação tranquila com o dentista.</p>
+        </div>
+
+        <div class="service-card">
+          <span class="service-fdi">faceta · lente</span>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <h3>Lentes de Contato Dental</h3>
+          <p>Facetas ultrafinas de porcelana para uniformizar cor e formato sem desgastar o dente.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="sobre" class="about">
+    <div class="wrap">
+      <div class="reveal">
+        <div class="eyebrow">Sobre a Clínac</div>
+        <h2>Uma clínica pensada para tirar <em>o medo</em> da cadeira do dentista.</h2>
+        <div class="diff-list">
+          <div class="diff-item">
+            <span class="diff-num">01</span>
+            <div>
+              <h4>Diagnóstico antes de qualquer procedimento</h4>
+              <p>Toda avaliação começa com escaneamento digital — você vê a imagem da sua própria arcada antes de decidir o tratamento.</p>
+            </div>
+          </div>
+          <div class="diff-item">
+            <span class="diff-num">02</span>
+            <div>
+              <h4>Equipe multidisciplinar sob o mesmo teto</h4>
+              <p>Ortodontista, implantodontista e odontopediatra dividem o mesmo prontuário, sem reencaminhamentos.</p>
+            </div>
+          </div>
+          <div class="diff-item">
+            <span class="diff-num">03</span>
+            <div>
+              <h4>Ambiente pensado para todas as idades</h4>
+              <p>Salas separadas para atendimento infantil, com linguagem e ritmo adaptados a cada fase.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-visual reveal">
+        <svg viewBox="0 0 200 250" fill="none">
+          <path d="M100 20c-22 0-38 16-38 42 0 24 10 44 10 66 0 10 5 17 13 17s11-6 13-16c2-9 3-18 8-18s6 9 8 18c2 10 5 16 13 16s13-7 13-17c0-22 10-42 10-66 0-26-16-42-38-42z" stroke="#9FC4AE" stroke-width="1.6" opacity=".8"/>
+          <path d="M100 45c-14 0-22 10-22 26 0 15 6 27 6 41 0 6 3 10 8 10s7-4 8-10c1-6 2-11 5-11s4 5 5 11c1 6 3 10 8 10s8-4 8-10c0-14 6-26 6-41 0-16-8-26-22-26z" stroke="#FFFFFF" stroke-width="1.4" opacity=".5"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="depoimentos" class="testimonials">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Depoimentos</div>
+        <h2>O que fica depois da consulta</h2>
+      </div>
+
+      <div class="test-grid reveal">
+        <div class="test-card">
+          <div class="stars">★★★★★</div>
+          <p class="test-quote">Levei meu filho de 5 anos com receio e a equipe transformou a consulta em uma coisa tranquila. Ele já pergunta quando volta.</p>
+          <div class="test-foot">
+            <div class="test-avatar">MP</div>
+            <div>
+              <div class="test-name">Marina P.</div>
+              <div class="test-role">Odontopediatria</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="stars">★★★★★</div>
+          <p class="test-quote">Fiz o alinhador invisível e acompanhei cada etapa pelo escaneamento. Sabia exatamente o que esperar em cada retorno.</p>
+          <div class="test-foot">
+            <div class="test-avatar">RC</div>
+            <div>
+              <div class="test-name">Rafael C.</div>
+              <div class="test-role">Ortodontia</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="stars">★★★★★</div>
+          <p class="test-quote">Implante planejado com calma, sem pressa para fechar orçamento. Resultado ficou natural, ninguém percebe.</p>
+          <div class="test-foot">
+            <div class="test-avatar">LS</div>
+            <div>
+              <div class="test-name">Luiza S.</div>
+              <div class="test-role">Implantodontia</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOOKING -->
+  <section id="contato" class="booking">
+    <div class="wrap">
+      <div class="booking-box reveal">
+        <div class="booking-left">
+          <div class="eyebrow">Agendamento</div>
+          <h2>Marque sua avaliação e conheça seu plano de tratamento.</h2>
+          <p>A primeira consulta inclui escaneamento digital e um plano por escrito, sem compromisso. Preencha o formulário ou fale direto pelo WhatsApp.</p>
+          <a href="https://wa.me/553186182875" target="_blank" rel="noopener" class="btn btn-outline" style="border-color:#fff;color:#fff;">Chamar no WhatsApp</a>
+        </div>
+        <form onsubmit="event.preventDefault(); this.reset(); alert('Recebemos seu pedido! Entraremos em contato em breve.');">
+          <input type="text" placeholder="Nome completo" required>
+          <div class="form-row">
+            <input type="tel" placeholder="Telefone / WhatsApp" required>
+            <input type="text" placeholder="Melhor horário" >
+          </div>
+          <select required>
+            <option value="" disabled selected>Tratamento de interesse</option>
+            <option>Limpeza & Prevenção</option>
+            <option>Clareamento Dental</option>
+            <option>Ortodontia</option>
+            <option>Implantodontia</option>
+            <option>Odontopediatria</option>
+            <option>Lentes de Contato Dental</option>
+            <option>Ainda não sei</option>
+          </select>
+          <button type="submit" class="btn btn-primary">Solicitar avaliação</button>
+          <p class="form-note">Ao enviar, você concorda em ser contatado pela Clínac.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-logo">
+          <svg viewBox="0 0 26 26" fill="none"><path d="M13 4c-3 0-5 2-5 5.5 0 3 1.3 5.6 1.3 8.3 0 1.3.6 2.2 1.6 2.2.9 0 1.3-.7 1.6-2 .3-1.2.4-2.4 1-2.4s.7 1.2 1 2.4c.3 1.3.7 2 1.6 2 1 0 1.6-.9 1.6-2.2 0-2.7 1.3-5.3 1.3-8.3C18 6 16 4 13 4z" stroke="#9FC4AE" stroke-width="1.4"/></svg>
+          Clínac
+        </div>
+        <p class="foot-desc">Odontologia geral e especializada em Belo Horizonte. Cuidado explicado em cada etapa, do diagnóstico ao pós-tratamento.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Clínica</h5>
+        <ul>
+          <li><a href="#tratamentos">Tratamentos</a></li>
+          <li><a href="#sobre">Sobre nós</a></li>
+          <li><a href="#depoimentos">Depoimentos</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Contato</h5>
+        <ul>
+          <li>(31) 3300-4455</li>
+          <li>contato@clinac.com.br</li>
+          <li>Rua das Acácias, 210 — Savassi, BH</li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Horários</h5>
+        <ul>
+          <li>Seg–Sex · 8h às 19h</li>
+          <li>Sábado · 8h às 13h</li>
+          <li>Domingo · Fechado</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Clínac Odontologia. Todos os direitos reservados.</span>
+      <span>CRO-MG 00000</span>
+    </div>
+  </div>
+</footer>
+
+<a href="https://wa.me/553133004455" target="_blank" rel="noopener" class="wa-float" aria-label="Falar no WhatsApp">
+  <span class="wa-tooltip">Fale conosco no WhatsApp</span>
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.5 14.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-2-1.8-2.3-.2-.3 0-.5.1-.6.1-.1.3-.4.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5C9.4 9 8.9 7.8 8.7 7.3c-.2-.5-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.4z"/>
+    <path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5.1-1.3C8.5 21.6 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.2c-1.6 0-3.2-.4-4.5-1.2l-.3-.2-3.3.9.9-3.2-.2-.3C3.7 14.7 3.2 13 3.2 12 3.2 7.1 7.1 3.2 12 3.2S20.8 7.1 20.8 12 16.9 20.2 12 20.2z"/>
+  </svg>
+</a>
+
+<script>
+  // mobile menu (simple toggle -> reuse nav-links display)
+  const toggle = document.querySelector('.menu-toggle');
+  const links = document.querySelector('.nav-links');
+  if(toggle){
+    toggle.addEventListener('click', () => {
+      const open = links.style.display === 'flex';
+      links.style.display = open ? 'none' : 'flex';
+      links.style.cssText += open ? '' : 'position:absolute;top:100%;left:0;right:0;background:#FBFDFC;flex-direction:column;padding:20px 32px;gap:18px;border-bottom:1px solid #D9E8DF;';
+    });
+  }
+
+  // scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:.15});
+  revealEls.forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>
