@@ -1,0 +1,6 @@
+# Cache dos arquivos estáticos versionados do Next (JS/CSS com hash no nome
+# do arquivo — um deploy novo gera nomes novos, então "cache para sempre" é
+# seguro aqui). Ver docs/DEPLOY.md e
+# https://opennext.js.org/cloudflare/get-started#7-add-static-asset-caching
+/_next/static/*
+  Cache-Control: public,max-age=31536000,immutable

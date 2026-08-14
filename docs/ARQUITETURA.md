@@ -1,8 +1,8 @@
 # Arquitetura — Clínac Odontologia
 
-Este documento explica **como** o site funciona por dentro e **por quê** foi construído assim — para quem for mexer no projeto sem ter acompanhado as decisões, com ou sem ajuda de IA. Para o que o projeto é e como rodá-lo, veja o [`README.md`](../README.md).
+Este documento explica **como** o sistema funciona por dentro e **por quê** foi construído assim — para quem for mexer no projeto sem ter acompanhado as decisões, com ou sem ajuda de IA. Para o que o projeto é e como rodá-lo, veja o [`README.md`](../README.md). Para o pipeline de deploy, secrets, cron e backup, veja [`docs/DEPLOY.md`](DEPLOY.md).
 
-O projeto é propositalmente pequeno: uma única página estática (`index.html`), sem framework, sem build, sem backend próprio. As decisões abaixo existem justamente para manter essa simplicidade sem abrir mão de LGPD, acessibilidade e um caminho de saída caso o site cresça.
+O projeto é uma aplicação Next.js pequena e deliberadamente enxuta — não há microsserviços, fila de mensagens ou camada de cache própria. A complexidade real está concentrada em três lugares: quem pode ler/escrever o quê no banco (autorização), como o sistema se protege de abuso automatizado sem custar dinheiro, e como cada peça se comporta na ausência de configuração (negar por padrão, em todo canto).
 
 ---
 
@@ -11,104 +11,185 @@ O projeto é propositalmente pequeno: uma única página estática (`index.html`
 ```
 Navegador do usuário
   │
-  ├── index.html (HTML + CSS + JS, tudo em um arquivo só)
-  │     ├── formulário de agendamento ──► Formspree (formspree.io) ──► e-mail da clínica
-  │     ├── trackEvent() ──► console.debug (hoje) / ferramenta de analytics (futuro)
-  │     └── links ──► privacidade.html, termos.html
+  ├── GET /  (e demais rotas estáticas do site institucional)
+  │     servido direto pela borda da Cloudflare quando possível — não invoca
+  │     o Worker para HTML/CSS/imagem pré-renderizados (ver "assets" em
+  │     wrangler.jsonc)
   │
-  ├── privacidade.html / termos.html (páginas legais, geradas a partir de
-  │     PRIVACIDADE.md / TERMOS.md — mesmo conteúdo, formatos diferentes)
+  ├── POST /api/leads  (formulário de agendamento, app/components/BookingForm.tsx)
+  │     └─ Next.js rodando em Cloudflare Workers (via OpenNext)
+  │           ├─ Cloudflare Turnstile (siteverify) ── confirma que é humano
+  │           ├─ Supabase (Postgres, chave service_role) ── grava o lead
+  │           └─ Resend (API HTTP) ── e-mail de aviso para a clínica
   │
-  └── scripts/check-site.js (rodado localmente antes de publicar, não faz
-        parte do que é servido ao usuário)
+  └── /admin/*  (painel da equipe)
+        └─ Next.js (Server Components + Server Actions)
+              └─ Supabase (Postgres, chave anon + sessão do usuário) ── lê/escreve
+                 leads, decisão de acesso é da RLS do Postgres, não do TypeScript
+
+Cloudflare Cron Triggers (fora do navegador, ver wrangler.jsonc)
+  ├── diário   → GET /api/keepalive       → Supabase (evita pausa por inatividade)
+  └── semanal  → GET /api/backup-export   → Supabase (lê tudo) + Cloudflare R2 (grava dump)
 ```
 
-Não existe servidor, banco de dados ou API própria. A única dependência externa em tempo de execução é a Formspree, usada apenas para o formulário de agendamento.
+Stack completa e por que cada peça foi escolhida: ver a tabela "Tecnologias" no [`README.md`](../README.md). O ponto que este documento aprofunda é *como as peças se encaixam*, não a lista delas.
 
 ---
 
-## Decisão: Formspree em vez de backend próprio
+## Modelo de dados
 
-**Por quê.** O site não tem (e não precisa ter) servidor próprio — é hospedado como arquivos estáticos no GitHub Pages, que não executa código server-side. Para o formulário de agendamento funcionar sem um backend, as opções realistas eram um serviço de formulário como serviço (Formspree, Getform, EmailJS...) ou montar/hospedar um backend só para isso. Formspree foi escolhido pelo plano gratuito suficiente para o volume esperado de uma clínica, por não exigir nenhuma infraestrutura adicional e por devolver JSON (permitindo tratar sucesso/erro no próprio JS em vez de recarregar a página).
+Duas tabelas, definidas em `supabase/migrations/20260814120000_leads.sql` (comentada em detalhe — leia o arquivo para o raciocínio completo de cada `constraint`/`grant`/`policy`; aqui vai só o resumo):
 
-**Trade-off aceito.** Os dados do formulário — nome, telefone, tratamento de interesse — saem do navegador do usuário diretamente para os servidores da Formspree (Formspree, Inc., sediada nos EUA) antes de chegarem ao e-mail da clínica. Como o tratamento de interesse é dado de saúde (LGPD art. 11), isso é uma transferência internacional de dado sensível — daí o texto de consentimento específico no formulário e a menção explícita a isso em `privacidade.html` (ver seção sobre consentimento abaixo). A alternativa de hospedar um backend próprio evitaria esse trade-off, mas contradiria a decisão deliberada de manter o site 100% estático — o dono do site pode revisitar essa escolha se o volume ou a sensibilidade dos dados crescerem.
+### `public.leads`
 
-**Como o envio funciona.** O envio é feito por `fetch()` (AJAX) para manter o usuário na página e mostrar feedback inline — mas o `<form>` também tem `method="post"` e `action="https://formspree.io/f/..."` como esses mesmos valores usados pelo JS. Esse aparente dado duplicado é proposital: é o fallback de segurança caso o `<script>` falhe ao carregar ou executar (ex. `IntersectionObserver` ausente em um WebView antigo). Sem esse fallback, o navegador cairia no comportamento padrão de um `<form>` sem `method`/`action` explícitos, que é `GET` — e nome, telefone e dado de saúde vazariam pela URL, indo parar no histórico do navegador e em logs de servidor. **Os dois valores (no `<form action>` e na constante `FORMSPREE_ENDPOINT` do JS) precisam ser sempre atualizados juntos** — ver [Configuração necessária](../README.md#️-configuração-necessária-antes-de-publicar) no README.
+Um pedido de avaliação enviado pelo formulário. Modelagem deliberadamente rasa (sem tabela de histórico de status, sem normalizar `tratamento`) — o volume esperado é de dezenas a poucas centenas de linhas por mês numa clínica local.
 
-**Anti-abuso.** Como o ID do formulário é público (aparece no código-fonte, não é segredo), qualquer pessoa pode, em tese, postar diretamente no endpoint da Formspree sem passar pelo site. A defesa é em camadas: campo honeypot `_gotcha` (invisível para humanos, preenchido só por bots que leem todo o HTML), rate limit e painel de moderação da própria Formspree, e — pendente de confirmação do dono do site — reCAPTCHA e restrição de domínio configurados no painel (ver pendências no README).
+| Coluna | Tipo | Observação |
+|---|---|---|
+| `id` | `uuid` | gerado no servidor (`crypto.randomUUID()`), não no banco — ver "Um fluxo rastreado" abaixo |
+| `created_at` / `atualizado_em` | `timestamptz` | `atualizado_em` é mantido por trigger a cada `UPDATE` — é a data do último contato real, usada pelo expurgo de retenção (ver `supabase/data-subject-requests.sql`) |
+| `nome`, `telefone`, `melhor_horario` | `text` | dado pessoal comum |
+| `tratamento` | `text` | **dado de saúde (LGPD art. 11)** — tratado como categoria especial em todo o resto do sistema (e-mail, logs, RLS) |
+| `consentimento_lgpd` | `boolean not null` | `CHECK (... is true)` — impossível existir uma linha sem consentimento, mesmo pulando a rota |
+| `consentimento_marketing` | `boolean` | opcional, coletado separadamente do de saúde (exigência de finalidades distintas) |
+| `politica_versao` | `text` | qual versão de `PRIVACIDADE.md` foi aceita — rastreabilidade de consentimento (LGPD art. 8º §2º) |
+| `status` | `text` | `novo` → `contatado` → `agendado` → `compareceu`, editável só pela equipe |
 
-### Integração — Formspree (o único ponto de integração externa do site)
+Todos os limites de tamanho têm `CHECK constraint` no banco **e** validação equivalente em `app/lib/leads.ts` — de propósito duplicado: a rota é *um* caller possível, mas a `service_role` ignora RLS e não deveria ser o único freio contra um script de importação ou uma rota futura que esqueça de validar.
 
-- **Como é endereçado.** `POST https://formspree.io/f/<FORM_ID>`, chamado via `fetch()` em `index.html` (bloco "4) Envio do formulário", perto do fim do arquivo) e replicado no `<form action>` como fallback sem JS.
-- **O que entra.** Todo o `<form id="booking-form">` lido com `new FormData(form)` — ou seja, o JS é agnóstico ao nome dos campos; qualquer campo `name="..."` adicionado ao HTML passa a ser enviado automaticamente, sem mudar o JS. Campos atuais: `nome`, `telefone`, `melhor_horario`, `tratamento`, `consentimento_lgpd`, `consentimento_marketing`, `politica_versao` (versão da política aceita, hoje fixa em `"PRIVACIDADE v1.0 - 2026-08-13"`), `_subject` (assunto do e-mail, campo de controle da Formspree) e `_gotcha` (honeypot).
-- **O que volta.** JSON. Sucesso: `response.ok` verdadeiro (a Formspree normalmente responde `200`). Erro: JSON no formato `{ errors: [{ message }] }` ou `{ error: "..." }`, tratado pela função `formspreeError()` no JS.
-- **Quem pode chamar.** Qualquer cliente que conheça o endpoint (o ID é público) — não há autenticação. A defesa contra abuso está descrita acima (honeypot + painel Formspree + pendências de configuração no README).
-- **Como falha.** Três casos tratados explicitamente no JS: (1) endpoint ainda com `YOUR_FORM_ID` — falha imediata, sem tentar a rede; (2) timeout de rede (`AbortController`, 15s) — evita o botão travado em "Enviando…" numa conexão ruim; (3) resposta HTTP de erro da Formspree — mensagem extraída de `formspreeError()`. Em todos os casos o usuário vê uma mensagem de erro com uma alternativa (WhatsApp/telefone) em vez de falha silenciosa.
-- **O que muda.** Um envio bem-sucedido não altera nenhum estado no site (não há banco de dados) — o efeito é inteiramente externo: um e-mail chega à caixa configurada no painel da Formspree e o envio fica registrado no painel da Formspree por um tempo. Um envio bem-sucedido também dispara dois eventos internos (`clinac:form-submit-success` em `document`) consumidos pelo bloco de analytics — ver abaixo.
+### `public.admin_users`
 
----
-
-## Consentimento LGPD no formulário
-
-O formulário lida com dado de saúde (o tratamento de interesse selecionado, LGPD art. 11) e transfere esse dado para fora do Brasil (Formspree, LGPD art. 33). Por isso o desenho do consentimento é deliberadamente mais explícito que um checkbox genérico de "aceito os termos":
-
-- **Checkbox obrigatório** (`consentimento_lgpd`, `required`) — texto específico mencionando que o tratamento de interesse é dado de saúde e que os dados são armazenados nos EUA, com link para `privacidade.html` e `termos.html`. O texto foi definido por compliance e não deve ser parafraseado sem revisão.
-- **Checkbox opcional** (`consentimento_marketing`, sem `required`) — separado do consentimento de dado de saúde, porque LGPD exige que consentimentos com finalidades diferentes sejam coletados separadamente (não é válido "empacotar" marketing junto do consentimento necessário para o atendimento).
-- **Campo oculto `politica_versao`** — registra qual versão da política de privacidade o usuário aceitou no momento do envio, para rastreabilidade caso a política mude depois.
-- **Verificação mecânica.** `scripts/check-site.js` falha o build se o checkbox `consentimento_lgpd` perder o atributo `required` (ex. por um refactor acidental) — é a única regra de negócio verificada automaticamente neste projeto, por ser a mais fácil de quebrar sem querer e a mais cara de quebrar sem perceber.
-
-As páginas `privacidade.html` e `termos.html` (geradas a partir de `PRIVACIDADE.md`/`TERMOS.md`) são rascunhos de IA explicitamente marcados como não revisados por advogado, com campos `[PREENCHER]` em aberto — ver pendências no `README.md`. Isso não afeta o mecanismo de consentimento em si (que já funciona), apenas o conteúdo legal que ele referencia.
+Allowlist de quem é "equipe da clínica" — `user_id` referenciando `auth.users`, gerenciada à mão pelo dono do projeto (sem tela de convite). Existe porque o Supabase Auth aceita cadastro público por padrão: sem essa allowlist, qualquer pessoa na internet criaria uma conta e — sendo `authenticated` — passaria a ler todos os leads.
 
 ---
 
-## Analytics: o padrão de troca única (`trackEvent`)
+## A decisão mais importante do projeto: autorização por RLS, não por `if` no TypeScript
 
-O site não tem nenhuma ferramenta de analytics conectada hoje. Em vez de decidir a ferramenta durante esta revisão, foi criado um único ponto de integração:
+Esta é a peça que a revisão de segurança apontou como a melhor decisão arquitetural do código, e vale preservar o raciocínio aqui.
 
-```js
-function trackEvent(name, props) {
-  console.debug('[Clínac][analytics]', name, props || {});
-}
-```
+**O problema que isso evita.** O jeito mais direto de montar `/admin/leads` seria: usar a chave `service_role` (que ignora Row Level Security) para buscar os leads, e decidir em TypeScript se o usuário logado pode vê-los. Isso funciona — até o dia em que um `return` é esquecido, um layout renderiza antes do redirect, ou uma rota nova é copiada e colada sem levar a checagem junto. Nesse cenário, o bug vira **vazamento de dado de saúde**: a query já rodou com privilégio total, e a única coisa que faltou foi um `if`.
 
-Toda a instrumentação do site chama só essa função — nunca uma SDK de analytics diretamente. Para ligar uma ferramenta de verdade, troca-se **apenas o corpo dessa função** (e se adiciona o snippet do provedor no `<head>`); nenhum outro ponto do arquivo precisa mudar. Hoje os eventos só vão para o console do navegador — nada sai do site.
+**Como o projeto evita isso.** `/admin` nunca usa `service_role`. As páginas e Server Actions do painel (`app/lib/supabase/server.ts`) leem/escrevem usando a chave `anon` **mais o JWT da sessão do usuário logado** — exatamente como o navegador de um visitante comum faria, só que autenticado. Quem decide se aquela sessão pode ler a linha é a *policy* de RLS no Postgres (`is_clinic_staff()`, definida na migração), não uma condição no código da aplicação.
 
-**Eventos disparados** (nenhum carrega nome, telefone ou e-mail do usuário):
-- `whatsapp_click` — clique nos dois pontos de contato do WhatsApp (`{ source: 'floating' | 'inline' }`)
-- `form_submit_success` — só quando a Formspree confirma o envio (sem propriedades — é contagem de conversão, não registro de quem converteu)
-- `treatment_interest_selected` — disparado junto com o anterior, lê o `<select>` de tratamento diretamente do DOM (`{ treatment: <rótulo da opção> }`), nunca associado a nome/telefone
+**A consequência concreta que essa escolha compra**: se `/admin/leads` tiver um bug de controle de acesso amanhã — um `if` errado, um componente que renderiza cedo demais — o pior caso possível é uma **tabela vazia**, não uma tabela com dado de paciente. A superfície de erro que normalmente existiria em TypeScript foi movida para dentro do banco, onde há uma única definição de política, testada diretamente (`supabase/tests/rls_leads.test.sql`) e reforçada por `GRANT`s por coluna (a equipe só pode fazer `UPDATE` da coluna `status` — nem um bug no código consegue reescrever `nome`/`telefone`, porque o Postgres nem concede esse privilégio).
 
-**Recomendação registrada no código** (decisão do dono do site, não executada nesta revisão): uma ferramenta "privacy-first" sem cookies (Plausible, Fathom ou similar) em vez de GA4 — porque compliance já confirmou que o site hoje **não precisa** de banner de cookies, e GA4 reintroduziria essa exigência. Se uma ferramenta real for ligada, a frase em `privacidade.html` que hoje afirma que o site não usa nenhuma ferramenta de rastreamento **precisa ser atualizada na mesma mudança** (ver pendências no README).
+`service_role` continua existindo — mas só em três lugares, todos no servidor, nunca acessíveis por sessão de usuário: `app/api/leads/route.ts` (o único caminho de `INSERT`, já que não há policy de `INSERT` para ninguém), `app/api/keepalive/route.ts` e `app/api/backup-export/route.ts`. `app/lib/supabase/admin.ts` documenta essa fronteira no próprio código, e `import "server-only"` no topo de todo módulo que toca a chave transforma um uso indevido num componente de cliente em **erro de build**, não num vazamento descoberto depois.
+
+---
+
+## Superfície de integração
+
+### HTTP — Route Handlers do Next.js (Cloudflare Workers)
+
+#### `POST /api/leads` — recebe o formulário de agendamento
+
+- **Endereço**: `POST /api/leads` (`app/api/leads/route.ts`).
+- **Entrada**: JSON — `{ nome, telefone, melhor_horario, tratamento, consentimento_lgpd, consentimento_marketing, politica_versao, _gotcha, "cf-turnstile-response" }`. Contrato completo, com o motivo de cada campo, documentado no topo de `app/components/BookingForm.tsx` e de `app/api/leads/route.ts`.
+- **Saída**: sucesso `201 { ok: true }`. Falha `4xx/5xx { ok: false, error: string, code: string }` — `code` é um rótulo estável (`formato` | `limite` | `grande` | `desafio` | `validacao` | `indisponivel`) que o cliente usa para reagir de forma diferente sem casar string de mensagem; deliberadamente não carrega o motivo interno da recusa (isso fica só no log do servidor), para não virar um oráculo que ensina um atacante a contornar os filtros um a um.
+- **Quem pode chamar**: qualquer cliente na internet (é o formulário público) — a defesa não é autenticação, é uma cadeia de checagens em ordem crescente de custo: content-type → rate limit por IP (`app/lib/rate-limit.ts`, 5/10min, best-effort por isolate) → teto de corpo (4 KB) → honeypot `_gotcha` (responde sucesso falso, de propósito, para não ensinar o bot) → **Cloudflare Turnstile** (`app/lib/turnstile.ts`, o portão real) → validação de campo (`validateLeadPayload`). A posição do Turnstile *antes* do envio de e-mail é o ponto todo: ver "Jobs em segundo plano" abaixo.
+- **Como falha**: ver a lista de `code` acima. Casos notáveis: sem `TURNSTILE_SECRET_KEY` em produção, a rota nega **tudo** com `503`/`desafio` (negar por padrão — deixar passar recriaria em silêncio o buraco que o Turnstile fecha); se o Supabase estiver pausado por inatividade, o `INSERT` falha mas o e-mail de aviso **já foi disparado** (rodam em paralelo), então a clínica ainda fica sabendo do interessado mesmo no pior caso.
+- **O que muda**: grava uma linha em `public.leads` e dispara (sem bloquear a resposta ao usuário) um e-mail via Resend. Uma falha no e-mail nunca derruba a gravação do lead — e-mail é notificação, não é a fonte da verdade.
+
+#### `GET|POST /api/keepalive` e `GET|POST /api/backup-export`
+
+Não são endpoints de produto — existem só para os Cron Triggers da Cloudflare chamarem. Ver "Jobs em segundo plano" abaixo para o que cada um faz e por quê. Ambos:
+- **Endereçados** por bearer token (`Authorization: Bearer <segredo>` ou header dedicado), comparado em tempo constante.
+- **Autorização**: um segredo compartilhado (`KEEPALIVE_SECRET` / `BACKUP_EXPORT_SECRET`), nunca sessão de usuário — quem chama é o próprio Worker, via *service binding* (`WORKER_SELF_REFERENCE` em `wrangler.jsonc`), não uma requisição externa.
+- **Como falham**: resposta **uniformemente 401** tanto para "segredo ausente/não configurado" quanto para "segredo errado" — de propósito, para não revelar a um chamador não autenticado se a rota já foi configurada ou não (a distinção fica só no log do servidor).
+
+### Server Actions — `/admin` (sessão do usuário, governada por RLS)
+
+Não são rotas HTTP no sentido REST — são funções `"use server"` em `app/admin/actions.ts`, chamadas pelo próprio formulário React do painel. Documentadas aqui porque são a superfície de escrita do painel:
+
+| Ação | O que faz | Quem pode chamar | Onde a autorização real mora |
+|---|---|---|---|
+| `signIn` | `supabase.auth.signInWithPassword` | Qualquer um (rate limit 10/10min por IP) | Supabase Auth decide se e-mail/senha batem; mensagem de erro é deliberadamente igual para "e-mail não existe" e "senha errada" |
+| `signOut` | `supabase.auth.signOut` | Sessão autenticada | — |
+| `updateLeadStatus` | `UPDATE leads SET status = ...` | Sessão autenticada **e** presente em `admin_users` | RLS + `GRANT UPDATE (status)` no Postgres — a checagem em TypeScript aqui é só para dar mensagem decente, não é o que barra de fato |
+
+Leitura da lista de leads (`app/admin/leads/page.tsx`) segue a mesma régua: `createUserClient()` (chave `anon` + sessão), nunca `service_role` — ver seção de RLS acima.
+
+### Terceiros — chamadas de saída
+
+| Serviço | Chamado por | Direção | O que trafega |
+|---|---|---|---|
+| **Cloudflare Turnstile** (`siteverify`) | `app/lib/turnstile.ts` | server → Cloudflare | token do widget + IP do visitante; nunca dado do formulário |
+| **Resend** (`POST /emails`) | `app/lib/notify.ts` | server → Resend | nome, telefone, melhor horário; `tratamento` **só se** `LEAD_EMAIL_INCLUDE_HEALTH_DATA=true` (default `false`) |
+| **Supabase** (Postgres + Auth, via `@supabase/supabase-js` / `@supabase/ssr`) | `app/api/*`, `app/admin/*`, `middleware.ts` | server → Supabase | todo o dado do lead (via `service_role` no insert) ou o subconjunto que a RLS libera (via sessão) |
+| **Cloudflare R2** | `app/api/backup-export/route.ts` | server → R2 (mesma conta Cloudflare) | dump completo semanal de `leads`, incluindo `tratamento` |
+
+---
+
+## Jobs em segundo plano (Cron Triggers)
+
+Dois crons, definidos em `wrangler.jsonc` e roteados por `workers/entry.ts` (o adapter OpenNext não expõe um jeito de acrescentar um handler `scheduled` ao `fetch` que ele gera, então este arquivo importa o handler gerado e soma o `scheduled` por cima — ver comentário no próprio arquivo). Detalhes de agendamento, monitoramento e depuração: `docs/DEPLOY.md`, seção "Cron Triggers".
+
+- **Keep-alive (diário)** — `GET /api/keepalive`. O Supabase free pausa um projeto depois de 7 dias sem atividade; um site de clínica local pode passar uma semana sem nenhum lead. Sem isso, o formulário quebraria justamente para o primeiro visitante depois do silêncio. A rota faz uma contagem trivial (`head: true`) — nenhuma linha trafega, é só para o projeto registrar atividade.
+- **Backup export (semanal)** — `GET /api/backup-export`. O plano free do Supabase **não tem backup automático** (confirmado contra a documentação do Supabase — só Pro/Team/Enterprise). Sem essa rota, a única cópia dos leads seria a tabela em produção: reverter um deploy não desfaz uma migração ruim ou um `DELETE` sem `WHERE`. A rota lê `leads` inteira e grava um JSON no bucket R2 `BACKUPS_BUCKET`, mantendo só os 8 dumps mais recentes (~2 meses, decidido por compliance — guardar mais não serve à finalidade de recuperação de falha recente e só aumentaria a superfície de vazamento de dado de saúde). **Pendência de compliance**: a Cloudflare não oferece região sul-americana para R2, então o backup fica fora do Brasil mesmo que o banco esteja em São Paulo — ver checklist de pendências no `README.md`.
+- **Notificação por e-mail (por requisição, não por cron)** — `app/lib/notify.ts`, chamado dentro de `POST /api/leads`. Roda em paralelo com o `INSERT` (não depois): o `.catch` fica preso na mesma linha da chamada de propósito, porque uma rejeição sem handler no meio de um `await` em Cloudflare Workers pode derrubar a requisição inteira. Uma falha de e-mail nunca derruba o lead já gravado.
+
+---
+
+## Consentimento e LGPD
+
+O desenho de consentimento no formulário (dois checkboxes separados, versão da política gravada pelo servidor, dado de saúde omitido do e-mail por padrão) está comentado em detalhe em `app/lib/leads.ts`, `app/components/BookingForm.tsx` e `app/lib/notify.ts` — o raciocínio completo de cada decisão vive no código, perto de onde ela é aplicada, para não divergir do comportamento real.
+
+O conteúdo legal em si — quem é o controlador, quais operadores recebem o quê, prazo de retenção, base legal de cada tratamento, transferência internacional — é responsabilidade de [`PRIVACIDADE.md`](../PRIVACIDADE.md) e [`TERMOS.md`](../TERMOS.md) (espelhadas em `app/privacidade/page.tsx` e `app/termos/page.tsx`). Este documento **não duplica** esse conteúdo — ele muda de fonte única para não divergir. Dois pontos que a arquitetura precisa que quem for mexer no código saiba, porque conectam decisão técnica a texto legal:
+
+- **`CURRENT_POLICY_VERSION`** (`app/lib/leads.ts`) precisa ser bumpada no mesmo commit que qualquer mudança de substância em `PRIVACIDADE.md` — é o que prova qual texto cada titular efetivamente aceitou (LGPD art. 8º §2º). Ver comentário completo na constante.
+- **Ambas as páginas legais são minutas de IA, explicitamente não revisadas por advogado**, com bloqueadores de publicação abertos (região do Supabase, região do bucket R2) — ver checklist no `README.md`. Isso não afeta o mecanismo de consentimento em si, só o texto que ele referencia.
 
 ---
 
 ## Um fluxo rastreado ponta a ponta: agendamento pelo formulário
 
-Este é o caminho que exercita mais partes do sistema — do clique do usuário até o e-mail chegar na clínica e a tela atualizar.
+Este é o caminho que exercita mais partes do sistema de uma vez — do clique do usuário até o e-mail chegar na clínica e o painel refletir o novo pedido.
 
-1. **Usuário preenche o formulário** na seção `#contato` de `index.html` (campos `nome`, `telefone`, `melhor_horario`, `tratamento`) e marca o checkbox `consentimento_lgpd` (obrigatório — o navegador bloqueia o envio via HTML5 `required` se estiver desmarcado, sem precisar de JS para isso).
-2. **Clique em "Solicitar avaliação"** dispara o listener `submit` registrado em `bookingForm` (bloco "4" do `<script>`, perto do fim do arquivo). `event.preventDefault()` impede o comportamento padrão do `<form>` (que seria navegar para `action` via GET).
-3. **Guarda de configuração**: se `FORMSPREE_ENDPOINT` ainda tiver `YOUR_FORM_ID`, o fluxo para aqui — mostra mensagem de erro amigável e dispara `clinac:form-submit-error` com `reason: 'not_configured'`, sem tentar a rede.
-4. **Estado de envio**: `setSending(true)` desabilita o botão e troca o texto para "Enviando…", evitando duplo envio.
-5. **Requisição**: `fetch(FORMSPREE_ENDPOINT, { method: 'POST', body: new FormData(bookingForm), ... })`, com timeout de 15s via `AbortController`.
-6. **Resposta da Formspree**: se `response.ok`, o JS dispara o evento customizado `clinac:form-submit-success` em `document` **antes** de limpar o formulário (`bookingForm.reset()`) — a ordem importa porque o listener de analytics (passo 7) precisa ler o `<select name="tratamento">` enquanto o valor ainda está no DOM.
-7. **Analytics reage ao evento** (bloco "5" do `<script>`): o listener de `clinac:form-submit-success` chama `trackEvent('form_submit_success', {})` e, se houver um tratamento selecionado, `trackEvent('treatment_interest_selected', { treatment: <valor> })`. Hoje isso só imprime no console (ver seção acima).
-8. **UI atualiza**: `showFeedback('success', ...)` exibe a mensagem de confirmação na área `#booking-feedback` (`role="status" aria-live="polite"`, então leitores de tela anunciam a mudança), o formulário é limpo e o botão volta ao texto original.
-9. **Fora do site**: a Formspree recebe o payload, aplica suas próprias defesas (honeypot `_gotcha`, rate limit, moderação) e envia um e-mail para a caixa configurada no painel da Formspree — não há nenhum armazenamento próprio do site nesse processo.
+1. **Usuário preenche o formulário** na home (`app/components/BookingForm.tsx`), marca o checkbox `consentimento_lgpd` (obrigatório — HTML5 `required` bloqueia o submit sem JS precisar entrar em ação) e resolve o widget do Turnstile (`app/components/TurnstileWidget.tsx`), que guarda um token de uso único em estado do React.
+2. **Clique em "Solicitar avaliação"** dispara `handleSubmit`. Sem sitekey configurada ou sem token do Turnstile ainda resolvido, o formulário nem tenta a rede — mostra a mensagem de erro (com alternativa de WhatsApp) na hora.
+3. **Requisição**: `fetch('/api/leads', { method: 'POST', body: JSON.stringify(payload) })`, com timeout de 15s via `AbortController` e trava contra clique duplo (`sending` desabilita o botão).
+4. **No servidor** (`app/api/leads/route.ts`), em ordem: content-type → rate limit por IP → teto de corpo → honeypot `_gotcha` (bot recebe sucesso falso e some, sem aprender nada) → **Turnstile** (`verifyTurnstile`, chama o `siteverify` da Cloudflare) → `validateLeadPayload` (`app/lib/leads.ts`, que também decide o `politica_versao` real, ignorando o que o cliente mandou).
+5. **Grava e avisa em paralelo**: um `id` é gerado no servidor (`crypto.randomUUID()`) antes de qualquer operação, para que o e-mail possa citá-lo sem esperar o `INSERT` terminar. `notifyNewLead()` (Resend) dispara já, com `.catch` preso na mesma linha; o `INSERT` no Supabase (via `service_role`, `app/lib/supabase/admin.ts`) roda ao lado.
+6. **A resposta depende só do banco**: se o e-mail falhar mas o `INSERT` funcionar, a rota ainda responde sucesso — o lead é a fonte da verdade, o e-mail é efeito colateral. Se o `INSERT` falhar (ex. projeto Supabase pausado), a rota responde erro **mesmo que o e-mail já tenha saído** — então, no pior caso, a clínica ainda sabe que alguém tentou agendar.
+7. **UI atualiza**: `showFeedback`-equivalente no React mostra a mensagem de sucesso/erro (`role="status" aria-live="polite"`), o formulário é limpo e o Turnstile pede um token novo (o antigo já foi consumido — a Cloudflare recusa reuso).
+8. **A equipe vê o pedido** ao abrir `/admin/leads` (`app/admin/leads/page.tsx`): a página lê `leads` com a **sessão do usuário logado** (chave `anon`), e a RLS do Postgres decide se aquela sessão está em `admin_users`. Mudar o status (`StatusForm` → `updateLeadStatus` em `app/admin/actions.ts`) é um Server Action que faz `UPDATE ... SET status = ...`, novamente pela sessão do usuário — nunca `service_role`.
 
-Se qualquer etapa entre 5 e 9 falhar (rede, timeout, recusa da Formspree), o mesmo padrão se repete com `showFeedback('error', ...)` e um dos eventos `clinac:form-submit-error` (`reason: 'rejected' | 'network' | 'timeout'`), sempre com uma alternativa de contato (WhatsApp/telefone) na mensagem — nunca uma falha silenciosa.
+Se qualquer etapa entre 3 e 6 falhar, o padrão se repete com uma mensagem de erro específica (ver a lista de `code` na seção "Superfície de integração" acima), sempre com uma alternativa de contato (WhatsApp) — nunca uma falha silenciosa.
+
+---
+
+## Analytics: o padrão de troca única (`trackEvent`)
+
+Nenhuma ferramenta de analytics está conectada hoje. Toda a instrumentação do site (`app/lib/analytics.ts`) passa por uma única função:
+
+```ts
+export function trackEvent(name: string, props?: AnalyticsProps): void {
+  if (typeof window !== "undefined") console.debug("[Clínac][analytics]", name, props ?? {});
+}
+```
+
+Para ligar uma ferramenta de verdade, troca-se **só o corpo dessa função** (mais o snippet do provedor em `app/layout.tsx`) — nenhum outro ponto do app muda. Hoje os eventos só vão para o console do navegador; nada sai do site.
+
+**Eventos disparados** (nenhum carrega nome, telefone ou e-mail): `whatsapp_click` (`{ source: 'floating' | 'inline' }`), `form_submit_success` (sem propriedades — contagem de conversão, não registro de quem converteu) e `treatment_interest_selected` (`{ treatment: <rótulo> }`, lido do `<select>` antes do `form.reset()`, nunca associado a dado pessoal).
+
+**Recomendação registrada no código** (decisão do dono do site, não executada): uma ferramenta "privacy-first" sem cookies (Plausible, Fathom) em vez de GA4 — porque compliance confirmou que o site hoje **não precisa** de banner de cookies, e GA4 reintroduziria essa exigência. Se uma ferramenta real for ligada, a §2.6 de `PRIVACIDADE.md` (que hoje afirma ausência de rastreamento) precisa ser atualizada **na mesma mudança** — ver checklist no `README.md`.
 
 ---
 
 ## Acessibilidade — decisões não óbvias
 
-Duas correções desta revisão valem registro porque não são óbvias ao ler o CSS isoladamente:
+Duas correções, herdadas do site estático original e preservadas na migração, valem registro porque não são óbvias ao ler o CSS isoladamente:
 
-- **Foco visível sobre fundos escuros.** O outline padrão do navegador tem contraste insuficiente (~2.7:1) sobre os fundos verde-escuros do site (botões, caixa de agendamento, footer). Foi definido um anel de foco explícito (`outline: 2.5px solid var(--emerald-light)`) testado nos dois contextos de fundo do site.
-- **`prefers-reduced-motion` estava quebrando o herói, não só desativando a animação.** A ilustração SVG do hero e os pontinhos decorativos dependiam da *animação* para sair do estado inicial (traço escondido / opacidade zero) até o estado final (traço desenhado / visível). Um `animation: none !important` ingênuo deixava esses elementos travados no estado inicial — ou seja, invisíveis — para quem pede para reduzir movimento, o oposto do que a preferência deveria significar. A correção fixa esses elementos no estado final quando `prefers-reduced-motion: reduce` está ativo, em vez de simplesmente cancelar a animação.
+- **Foco visível sobre fundos escuros.** O outline padrão do navegador tem contraste insuficiente (~2.7:1) sobre os fundos verde-escuros do site (botões, caixa de agendamento, footer). Foi definido um anel de foco explícito (`outline: 2.5px solid var(--emerald-light)`, `app/globals.css`) testado nos dois contextos de fundo.
+- **`prefers-reduced-motion` estava quebrando o herói, não só desativando a animação.** A ilustração SVG do hero e os pontinhos decorativos dependiam da *animação* para sair do estado inicial (traço escondido / opacidade zero) até o final (traço desenhado / visível). Um `animation: none !important` ingênuo travaria esses elementos no estado inicial — invisíveis — para quem pede menos movimento, o oposto do que a preferência deveria significar. A correção fixa esses elementos no estado final quando a preferência está ativa, em vez de simplesmente cancelar a animação.
 
 ---
 
 ## Verificação automatizada
 
-Não há framework de testes — seria desproporcional para um site estático de uma página. Existe apenas `scripts/check-site.js` (Node puro, zero dependências), descrito no [README](../README.md#-como-rodar-as-verificações). Ele intencionalmente não tenta validar conteúdo (textos, responsividade real) — só os erros mecânicos mais fáceis de introduzir sem perceber ao editar HTML à mão: link quebrado, `alt` faltando, o `required` do consentimento LGPD sumindo, ou o placeholder da Formspree esquecido.
+Resumo — detalhes de comando e o que cada camada cobre estão no [`README.md`](../README.md#-como-rodar-as-verificações):
+
+- **Vitest** (`npm run test`) cobre a lógica de validação/autorização do caminho crítico: `app/lib/leads.test.ts` (o portão de consentimento LGPD, `validateLeadPayload`), `app/api/leads/route.test.ts` (a rota `POST /api/leads` de ponta a ponta, Supabase/Resend mockados) e `app/lib/rate-limit.test.ts`.
+- **`scripts/check-app.js`** — checagem mecânica zero-dependência (rotas-chave existem, `consentimento_lgpd` continua `required`, `alt` de `<img>`, toda env var documentada em `.env.example`). Não navega o site, não substitui QA manual.
+- **`supabase/tests/rls_leads.test.sql`** — testa as RLS policies e `GRANT`s direto no Postgres (não via app): `anon` não lê/escreve nada, `authenticated` fora de `admin_users` vê zero linhas, `authenticated` na allowlist só altera a coluna `status`. Não roda em CI (exige Postgres real) — rodar manualmente antes do lançamento e após qualquer mudança na migração de RLS.
+- Não há teste de UI/browser (Playwright etc.) — decisão deliberada de custo/benefício para este porte de projeto, coberta por um checklist manual (ver `README.md`).

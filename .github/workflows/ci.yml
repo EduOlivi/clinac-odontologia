@@ -1,0 +1,126 @@
+name: CI
+
+# ============================================================================
+# CI/CD — Clínac Odontologia (Cloudflare Workers, via OpenNext)
+# ============================================================================
+# Um único pipeline, proporcional a um site pequeno mantido por uma pessoa:
+#
+#   1. "verify" roda em todo push e todo PR — lint, typecheck, testes
+#      (Vitest), a checagem mecânica (scripts/check-app.js), `next build` e
+#      `opennextjs-cloudflare build` (a build real de produção, não só o
+#      Next). Se isto for verde, o site compila, o caminho crítico (rota
+#      /api/leads e o portão de consentimento LGPD) está coberto por teste
+#      automatizado, e o pacote está pronto para o Worker.
+#
+#      O que "verify" NÃO cobre (de propósito, ver relatório de qa): as RLS
+#      policies do Postgres (supabase/tests/rls_leads.test.sql) — exigem um
+#      Postgres real (local via `supabase start`/Docker, ou um projeto
+#      Supabase de teste) e não rodam aqui hoje. Ver esse arquivo para como
+#      rodá-las manualmente antes do lançamento e depois de qualquer mudança
+#      na migração de RLS.
+#
+#   2. "deploy" roda só em push direto na branch `main` (ou merge de PR nela)
+#      e só depois do "verify" passar. Publica no Cloudflare Workers.
+#
+# Não existe ambiente de staging separado neste pipeline — decisão
+# deliberada (ver docs/DEPLOY.md, seção "Por que não staging"), não
+# esquecimento. Rollback não é "reverter e re-rodar o pipeline": é
+# `wrangler rollback` (segundos, sem precisar de build) — ver docs/DEPLOY.md.
+#
+# "verify" e "deploy" NÃO recebem nenhum SEGREDO do site (Supabase, Resend,
+# TURNSTILE_SECRET_KEY, etc.) — não precisam: nenhum deles é lido durante
+# `next build` (só em tempo de requisição, ver app/lib/env.ts), e os secrets
+# reais do Worker vivem só na Cloudflare (`wrangler secret put`, nunca no
+# GitHub). "deploy" só recebe o necessário para AUTENTICAR o
+# `wrangler deploy`.
+#
+# A ÚNICA exceção é NEXT_PUBLIC_TURNSTILE_SITE_KEY, e ela não é segredo: é a
+# sitekey pública do Turnstile, que a Cloudflare documenta como tal e que
+# PRECISA estar no HTML para o widget existir. Ela vem de uma *variable* do
+# GitHub Actions (aba Variables, não Secrets) porque variáveis
+# `NEXT_PUBLIC_*` são inlinadas pelo Next em tempo de BUILD — cadastrá-la
+# como secret/var do Worker (runtime) não a faria chegar ao navegador. Ver
+# docs/DEPLOY.md, seção "Cloudflare Turnstile".
+#
+# Se a variable não estiver cadastrada, o build passa e o site sobe SEM o
+# widget — e aí /api/leads recusa todo envio (negar por padrão). Isso é
+# intencional, mas é justamente o modo de falha silencioso que a seção do
+# DEPLOY.md manda conferir depois do primeiro deploy.
+# ============================================================================
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    name: Lint, typecheck, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint (eslint)
+        run: npm run lint
+
+      - name: Typecheck (tsc --noEmit)
+        run: npm run typecheck
+
+      - name: Testes (vitest)
+        run: npm run test
+
+      - name: Checagem mecânica (scripts/check-app.js)
+        run: npm run check
+
+      - name: Build (next build)
+        run: npm run build
+        env:
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+
+      - name: Build for Cloudflare Workers (opennextjs-cloudflare build)
+        run: npm run build:worker
+        env:
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+
+  deploy:
+    name: Deploy to Cloudflare Workers
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # "environment: production" só para o histórico de deploys aparecer na
+    # aba Environments do GitHub — não protege nada por si só a menos que
+    # regras de proteção sejam configuradas em Settings -> Environments.
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # `npm run deploy` = `opennextjs-cloudflare build && opennextjs-cloudflare
+      # deploy`. O `deploy` interno chama `wrangler deploy`, que lê
+      # CLOUDFLARE_API_TOKEN/CLOUDFLARE_ACCOUNT_ID do ambiente — não passamos
+      # nenhum outro segredo aqui de propósito (ver cabeçalho do arquivo e
+      # docs/DEPLOY.md, seção "Segredos: CI x Worker").
+      - name: Build & deploy
+        run: npm run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Pública, e inlinada no bundle do navegador em tempo de build —
+          # ver cabeçalho do arquivo. É `vars.`, não `secrets.`, de propósito.
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}

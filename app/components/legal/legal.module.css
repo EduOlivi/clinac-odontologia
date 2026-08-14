@@ -1,0 +1,228 @@
+/* ======================================================================
+   CLÍNAC ODONTOLOGIA — CSS das páginas jurídicas (privacidade.html / termos.html)
+   ======================================================================
+   Migrado 1:1 do <style> inline de privacidade.html/termos.html (as duas
+   páginas usavam exatamente a mesma folha de estilo no site estático
+   original). Vive em CSS Module (em vez de globals.css) de propósito: os
+   seletores originais (`header`, `nav`, `footer`, `a`, `.wrap`, `.eyebrow`)
+   têm valores DIFERENTES dos usados pela home page (ex.: `.wrap` aqui é
+   max-width:820px, na home é 1200px; `a` aqui é sublinhado, na home não)
+   — como cada HTML original era um documento isolado, os dois conjuntos
+   de regras nunca colidiam. Agora que tudo vive num só app Next.js, o
+   isolamento do CSS Module reproduz esse mesmo isolamento sem alterar
+   nenhum valor visual das duas folhas de estilo originais. */
+
+.page a {
+  color: var(--emerald);
+  text-decoration: underline;
+}
+.page a:hover {
+  color: var(--pine);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(251, 253, 252, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.logo {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--pine);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+}
+.logo svg {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.backLink {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--pine-dark);
+  text-decoration: none;
+}
+.backLink:hover {
+  color: var(--emerald);
+}
+
+.main {
+  padding: 64px 0 96px;
+}
+.wrap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+.docHead {
+  margin-bottom: 40px;
+}
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--emerald);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.eyebrow::before {
+  content: "";
+  width: 26px;
+  height: 1.5px;
+  background: var(--emerald);
+}
+.title {
+  font-family: var(--display);
+  font-weight: 450;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.1;
+  color: var(--pine-dark);
+}
+.docMeta {
+  margin-top: 14px;
+  font-size: 13.5px;
+  color: #5c7a6c;
+}
+
+.warn {
+  margin-top: 28px;
+  background: #fff6e9;
+  border: 1px solid #f0d9a8;
+  border-radius: 12px;
+  padding: 20px 22px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #5c4a1e;
+}
+.warn strong {
+  color: #40330f;
+}
+
+.legalBody h2 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--pine-dark);
+  margin-top: 48px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.legalBody h3 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--pine-dark);
+  margin-top: 26px;
+  margin-bottom: 10px;
+}
+.legalBody p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #2b3f35;
+  margin-top: 12px;
+}
+.legalBody ul,
+.legalBody ol {
+  margin-top: 12px;
+  margin-left: 22px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #2b3f35;
+}
+.legalBody li {
+  margin-top: 6px;
+}
+.legalBody hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 40px 0;
+}
+.legalBody table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 13.5px;
+}
+.legalBody th,
+.legalBody td {
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  vertical-align: top;
+  line-height: 1.5;
+}
+.legalBody th {
+  background: var(--mist);
+  color: var(--pine-dark);
+  font-weight: 600;
+}
+.legalBody td {
+  color: #3a4f45;
+}
+
+.fill {
+  background: #fff1cf;
+  color: #6b4e00;
+  font-family: var(--mono);
+  font-size: 0.92em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: normal;
+}
+
+.docNav {
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+
+.footer {
+  background: var(--pine-dark);
+  color: #b9cfc1;
+  padding: 36px 0;
+}
+.footerWrap {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12.5px;
+}
+.footer a {
+  color: #b9cfc1;
+}
+.footer a:hover {
+  color: var(--white);
+}
+
+@media (max-width: 560px) {
+  .wrap {
+    padding: 0 20px;
+  }
+  .nav {
+    padding: 16px 20px;
+  }
+}

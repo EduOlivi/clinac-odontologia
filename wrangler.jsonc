@@ -1,0 +1,132 @@
+{
+	// ==========================================================================
+	// wrangler.jsonc — configuração do Worker (Cloudflare)
+	// ==========================================================================
+	// Gerado para o adapter OpenNext (@opennextjs/cloudflare). Este arquivo é
+	// COMMITADO — por isso só pode conter configuração pública. Nenhum segredo
+	// (chave do Supabase, do Resend, KEEPALIVE_SECRET) vai aqui: eles são
+	// `wrangler secret put`, gravados criptografados do lado da Cloudflare e
+	// nunca aparecem neste repositório nem em `wrangler whoami`/logs.
+	// Ver docs/DEPLOY.md para o passo a passo completo (primeiro deploy,
+	// segredos, rollback, cron, monitoramento).
+	// ==========================================================================
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "clinac-odontologia",
+
+	// Entrada real do Worker — NÃO é ".open-next/worker.js" (o padrão do
+	// adapter). ".open-next/worker.js" é gerado a cada build e só exporta
+	// `fetch`; workers/entry.ts importa esse handler gerado e acrescenta
+	// `scheduled` (cron do keep-alive). Ver workers/entry.ts e
+	// https://opennext.js.org/cloudflare/howtos/custom-worker.
+	"main": "workers/entry.ts",
+
+	"compatibility_date": "2026-08-14",
+	"compatibility_flags": [
+		// APIs Node.js (o Supabase SDK e o @supabase/ssr usam algumas) —
+		// obrigatório para @opennextjs/cloudflare funcionar.
+		"nodejs_compat",
+		// Bloqueia o Worker de fazer fetch para IPs privados/loopback da rede
+		// interna da Cloudflare — não muda nada para este site (só fala com
+		// Supabase/Resend, ambos públicos), é postura padrão recomendada.
+		"global_fetch_strictly_public"
+	],
+
+	// Arquivos estáticos (Next exporta o que não precisa de servidor — CSS,
+	// imagens, HTML pré-renderizado das páginas sem dado dinâmico) servidos
+	// direto pela borda da Cloudflare, sem invocar o Worker. Não conta como
+	// "requisição de Worker" para fins de cota free.
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+
+	// Auto-referência: o próprio Worker chama a si mesmo por bind interno (sem
+	// sair para a rede) em dois casos — (1) o Worker gerado pelo OpenNext usa
+	// isto para revalidação/ISR internamente; (2) o handler `scheduled` em
+	// workers/entry.ts usa para chamar GET /api/keepalive todo dia sem
+	// precisar hardcodar o domínio de produção. O nome do serviço precisa
+	// bater com "name" acima.
+	"services": [
+		{
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "clinac-odontologia"
+		}
+	],
+
+	// Dois Cron Triggers — workers/entry.ts distingue qual é qual por
+	// `controller.cron` (a própria expressão que disparou o evento):
+	//
+	//   "0 6 * * *"    diário, 06:00 UTC (03:00 em Brasília, tráfego baixo) ->
+	//                  GET /api/keepalive. Evita a pausa por inatividade do
+	//                  Supabase free depois de 7 dias. Diário, não semanal,
+	//                  por instrução do backend: sobra folga de 6 tentativas
+	//                  antes do prazo de 7 dias estourar caso uma execução
+	//                  falhe.
+	//
+	//   "10 6 * * 1"   semanal, segunda 06:10 UTC -> GET /api/backup-export.
+	//                  Grava um dump de `leads` no bucket R2 abaixo (o
+	//                  Supabase free não faz backup automático — ver
+	//                  docs/DEPLOY.md, seção "Backup e recuperação de
+	//                  dados"). Compensado 10 min depois do keep-alive de
+	//                  propósito, para não competir por CPU no mesmo minuto.
+	"triggers": {
+		"crons": ["0 6 * * *", "10 6 * * 1"]
+	},
+
+	// Logs de invocação no painel da Cloudflare (Workers Logs) — é o que
+	// permite ver o erro de uma execução de cron que falhou, ou de uma
+	// requisição que deu 500, sem precisar reproduzir localmente. Incluído no
+	// plano free, com retenção limitada (ver docs/DEPLOY.md).
+	"observability": {
+		"enabled": true
+	},
+
+	// ---------------------------------------------------------------------
+	// Vars NÃO secretas (committadas de propósito — ver docs/DEPLOY.md para
+	// por que cada uma está aqui e não em `wrangler secret put`).
+	// ---------------------------------------------------------------------
+	"vars": {
+		// Já é pública por definição (prefixo NEXT_PUBLIC_, aparece no HTML
+		// enviado ao navegador em Open Graph/canonical). TROCAR quando o
+		// domínio real da clínica for definido — ver docs/DEPLOY.md.
+		"NEXT_PUBLIC_SITE_URL": "https://www.seudominio.com.br",
+
+		// Caminho da rota de keep-alive, usado por workers/entry.ts. Não é
+		// segredo (o segredo é o KEEPALIVE_SECRET, esse sim via
+		// `wrangler secret put`) — existe aqui só para não hardcodar o
+		// caminho dentro do código do Worker.
+		"KEEPALIVE_ENDPOINT_PATH": "/api/keepalive",
+
+		// Mesma lógica para a rota de backup — não é segredo, é só o caminho.
+		"BACKUP_EXPORT_ENDPOINT_PATH": "/api/backup-export",
+
+		// Decisão de compliance (ver .env.example e app/lib/notify.ts): o
+		// e-mail de aviso de novo lead NÃO inclui o tratamento de interesse
+		// (dado de saúde, LGPD art. 11) por padrão. Mudar isto é decisão de
+		// compliance, não de infraestrutura — não altere sem alinhar com eles.
+		"LEAD_EMAIL_INCLUDE_HEALTH_DATA": "false"
+	},
+
+	// ---------------------------------------------------------------------
+	// R2 — bucket de backup semanal de `leads` (app/api/backup-export).
+	// ---------------------------------------------------------------------
+	// PASSO MANUAL antes do primeiro deploy (o dono do site precisa rodar,
+	// autenticado na própria conta Cloudflare — ver docs/DEPLOY.md):
+	//
+	//   npx wrangler r2 bucket create clinac-odontologia-backups
+	//
+	// Fica na MESMA conta Cloudflare que já hospeda o Worker — não é um
+	// novo terceiro no fluxo de dado de saúde (diferente de, por exemplo,
+	// mandar o dump por e-mail). Bem dentro do free tier do R2 (10 GB de
+	// armazenamento e 1M/10M operações por mês de graça) para um dump
+	// semanal de uma tabela de leads deste porte — ver docs/DEPLOY.md.
+	"r2_buckets": [
+		{
+			"binding": "BACKUPS_BUCKET",
+			"bucket_name": "clinac-odontologia-backups"
+		}
+	]
+
+	// Não há "kv_namespaces" aqui — decisão deliberada, não esquecimento.
+	// Ver docs/DEPLOY.md, seção "Rate limiting: por que não KV".
+}

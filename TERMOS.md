@@ -1,7 +1,7 @@
 # Termos de Uso — Site da Clínac Odontologia
 
-**Última atualização:** 13 de agosto de 2026
-**Versão:** 1.0 (minuta — pendente de revisão jurídica)
+**Última atualização:** 14 de agosto de 2026
+**Versão:** 2.0 (minuta — pendente de revisão jurídica)
 
 > ⚠️ **AVISO — ESTE DOCUMENTO AINDA NÃO FOI REVISADO POR ADVOGADO.**
 > Esta é uma minuta. Cláusulas de limitação de responsabilidade em relação de
@@ -10,6 +10,11 @@
 > responsabilização. Não publique como versão final sem revisão de um advogado.
 > Antes de publicar, remova este aviso **e** preencha todos os campos
 > `[PREENCHER: ...]`.
+
+> **O que mudou da v1.0 para a v2.0.** A infraestrutura do site foi refeita: ele
+> deixou de ser um site estático hospedado no GitHub Pages com formulário
+> enviado à Formspree, e passou a rodar em Cloudflare Workers com banco de dados
+> próprio. As cláusulas 5.1, 5.2, 5.3, 9 e 10 foram atualizadas por causa disso.
 
 ---
 
@@ -91,6 +96,12 @@ WhatsApp ou e-mail.
 Prazo estimado de retorno: `[PREENCHER: ex. até 2 dias úteis]`. Esse prazo é uma
 estimativa, não uma garantia contratual.
 
+O formulário depende de uma **verificação anti-robô** executada no seu
+navegador. Se ela não puder ser concluída (bloqueador de scripts, rede
+instável, indisponibilidade do serviço de verificação), o envio é recusado por
+segurança e o site indica o **WhatsApp** como canal alternativo — que continua
+funcionando independentemente do formulário.
+
 ### 5.2 Suas responsabilidades ao usar o formulário
 
 Ao enviar o formulário, você se compromete a:
@@ -104,7 +115,9 @@ Ao enviar o formulário, você se compromete a:
   de convênio, diagnósticos, histórico médico, laudos ou imagens). Esses dados
   são tratados presencialmente, no ambiente adequado;
 - não utilizar o formulário para spam, publicidade, testes automatizados ou
-  qualquer finalidade diversa do agendamento.
+  qualquer finalidade diversa do agendamento;
+- não tentar contornar a verificação anti-robô, os limites de envio ou
+  qualquer outro controle de segurança do site.
 
 A Clínac pode desconsiderar e excluir solicitações manifestamente falsas,
 abusivas ou automatizadas.
@@ -113,8 +126,13 @@ abusivas ou automatizadas.
 
 O envio do formulário depende da marcação da caixa de consentimento nele
 apresentada, que abrange o tratamento de dado de saúde ("tratamento de
-interesse") e a transferência internacional dos dados, conforme a
+interesse") e a transferência internacional dos dados para os serviços de
+tecnologia usados pelo site, conforme a seção 4 da
 [Política de Privacidade](PRIVACIDADE.md).
+
+Essa marcação é verificada **no servidor**, não apenas no navegador: sem ela, o
+pedido não é gravado. O registro do seu pedido guarda **qual versão da Política
+de Privacidade estava vigente** no momento do envio.
 
 A caixa de **comunicações promocionais é opcional e independente**: recusá-la
 não impede o agendamento, e você pode revogá-la depois sem prejuízo ao seu
@@ -161,7 +179,10 @@ As fontes tipográficas e bibliotecas de terceiros utilizadas permanecem sujeita
 
 ## 9. Disponibilidade do site
 
-O site é hospedado no GitHub Pages, serviço de terceiro. A Clínac não garante
+O site é executado na infraestrutura da **Cloudflare** e utiliza serviços de
+terceiros para armazenamento (Supabase), verificação anti-robô (Cloudflare
+Turnstile) e envio de avisos por e-mail (Resend) — todos identificados na seção
+4 da [Política de Privacidade](PRIVACIDADE.md). A Clínac não garante
 disponibilidade ininterrupta, ausência de erros ou acesso livre de falhas, e
 pode alterar, suspender ou descontinuar o site ou qualquer de suas seções a
 qualquer tempo, sem aviso prévio.
@@ -179,8 +200,9 @@ Termos —, a Clínac não se responsabiliza por:
 
 - decisões tomadas exclusivamente com base no conteúdo informativo do site, sem
   consulta presencial;
-- indisponibilidade, lentidão ou falha de serviços de terceiros (hospedagem,
-  provedor do formulário, WhatsApp, provedores de e-mail);
+- indisponibilidade, lentidão ou falha de serviços de terceiros (hospedagem e
+  verificação anti-robô, banco de dados, envio de e-mail, WhatsApp, provedores
+  de e-mail);
 - perda de solicitação de agendamento decorrente de falha técnica de terceiros
   ou de dados de contato incorretos informados pelo usuário;
 - conteúdo de sites de terceiros acessados a partir de links deste site.
