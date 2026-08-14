@@ -4,41 +4,78 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clínac Odontologia — Cuidado que se vê no sorriso</title>
+<meta name="description" content="Clínica odontológica em Belo Horizonte com limpeza, implantodontia, ortodontia, odontopediatria e clareamento. Agende sua avaliação com escaneamento digital e plano de tratamento por escrito.">
+<!-- PLACEHOLDER: URL canônica abaixo assume a demo citada no README (https://eduolivi.github.io/clinac-odontologia/). Confirmar com o dono do site qual é a URL pública final antes do lançamento e ajustar aqui, no og:url e no og:image. -->
+<link rel="canonical" href="https://eduolivi.github.io/clinac-odontologia/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Clínac Odontologia">
+<meta property="og:title" content="Clínac Odontologia — Cuidado que se vê no sorriso">
+<meta property="og:description" content="Clínica odontológica em Belo Horizonte com limpeza, implantodontia, ortodontia, odontopediatria e clareamento. Agende sua avaliação com escaneamento digital e plano de tratamento por escrito.">
+<meta property="og:url" content="https://eduolivi.github.io/clinac-odontologia/">
+<meta property="og:image" content="https://eduolivi.github.io/clinac-odontologia/imagens/foto%201.jpeg">
+<meta property="og:image:alt" content="Estrutura e consultório Clínac Odontologia">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Clínac Odontologia — Cuidado que se vê no sorriso">
+<meta name="twitter:description" content="Clínica odontológica em Belo Horizonte com limpeza, implantodontia, ortodontia, odontopediatria e clareamento.">
+<meta name="twitter:image" content="https://eduolivi.github.io/clinac-odontologia/imagens/foto%201.jpeg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,450&family=Libre+Franklin:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  /* ======================================================================
+     CLÍNAC ODONTOLOGIA — FOLHA DE ESTILOS (CSS)
+     ====================================================================== */
   :root{
-    --white:#FFFFFF;
-    --mist:#EDF6F1;
-    --mist-2:#E1F0E7;
-    --pine:#0E3B2C;
-    --pine-dark:#082A1F;
-    --emerald:#1F7A53;
+    /* --- paleta de cores da marca (branco + verde) --- */
+    --white:#FFFFFF;        
+    --mist:#EDF6F1;         
+    --mist-2:#E1F0E7;       
+    --pine:#0E3B2C;         
+    --pine-dark:#082A1F;    
+    --emerald:#1F7A53;      
     --emerald-light:#2F9468;
-    --sage:#9FC4AE;
-    --ink:#10241B;
-    --line:#D9E8DF;
-    --paper:#FBFDFC;
+    --sage:#9FC4AE;         
+    --ink:#10241B;          
+    --line:#D9E8DF;         
+    --paper:#FBFDFC;        
 
-    --display:'Fraunces', serif;
+    /* --- famílias de fonte usadas no site --- */
+    --display:'Fraunces', serif;        
     --body:'Libre Franklin', sans-serif;
-    --mono:'Space Mono', monospace;
+    --mono:'Space Mono', monospace;     
   }
 
   *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+  html{scroll-behavior:smooth;} 
   body{
     font-family:var(--body);
     color:var(--ink);
     background:var(--paper);
-    -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased; 
+    overflow-x:hidden; 
   }
   img,svg{display:block;max-width:100%;}
   a{color:inherit;text-decoration:none;}
   ul{list-style:none;}
   button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+  /* ---------- foco visível ----------
+     O outline padrão do navegador (auto, ~1px, cinza #767676) tem contraste
+     insuficiente (~2.7:1, abaixo do mínimo de 3:1 do WCAG 1.4.11) sobre os
+     fundos verde-escuros do site (botões pill, caixa de agendamento, footer,
+     seção "sobre") e por isso fica praticamente invisível para quem navega
+     por teclado. Definimos um anel explícito, testado nos dois contextos de
+     fundo (claro e escuro) do site — ver auditoria de UX. */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  .dot:focus-visible{
+    outline:2.5px solid var(--emerald-light);
+    outline-offset:3px;
+  }
+  input[type="checkbox"]:focus-visible{outline-offset:2px;}
 
   .wrap{
     max-width:1200px;
@@ -57,6 +94,16 @@
   @media (prefers-reduced-motion:reduce){
     .reveal{opacity:1;transform:none;transition:none;}
     *{animation:none !important;}
+    /* `animation:none` acima só cancela a animação — o SVG do herói e os
+       pontinhos decorativos usam a ANIMAÇÃO para chegar do estado inicial
+       (traço escondido / opacity:0) até o estado final (traço desenhado /
+       opacity:1). Sem isso, quem pede "reduzir movimento" ficava com a
+       ilustração do herói quebrada/invisível em vez de estática — o
+       oposto do que "reduzir movimento" deveria significar. Fixamos os
+       dois no estado final, como já era feito para o botão do WhatsApp
+       (.wa-float, mais abaixo). */
+    .smile-path{stroke-dashoffset:0 !important;}
+    .art-dot{opacity:1 !important;}
   }
 
   /* ---------- nav ---------- */
@@ -118,7 +165,8 @@
     padding:88px 0 60px;
     position:relative;
     background:
-      radial-gradient(ellipse 900px 500px at 85% -10%, var(--mist-2), transparent 60%);
+      radial-gradient(ellipse 900px 500px at 85% -10%, var(--mist-2), transparent 60%),
+      radial-gradient(ellipse 600px 400px at 10% 100%, rgba(159,196,174,.25), transparent 65%);
   }
   .hero .wrap{
     display:grid;
@@ -237,14 +285,7 @@
     font-size:16px;color:#4B6156;line-height:1.6;
   }
 
-  /* ---------- services : tooth chart grid ---------- */
-  .chart-note{
-    font-family:var(--mono);
-    font-size:11.5px;
-    color:#7E9A8C;
-    margin-top:-40px;
-    margin-bottom:44px;
-  }
+  /* ---------- services ---------- */
   .services-grid{
     display:grid;
     grid-template-columns:repeat(3,1fr);
@@ -252,15 +293,38 @@
     background:var(--line);
     border:1px solid var(--line);
     border-radius:18px;
-    overflow:hidden;
+    overflow:hidden; 
   }
   .service-card{
     background:var(--white);
     padding:36px 30px;
-    transition:background .25s ease;
+    transition:background .25s ease, transform .2s ease;
     position:relative;
   }
-  .service-card:hover{background:var(--mist);}
+  .service-card:hover{background:var(--mist);transform:translateY(-2px);}
+  .service-card.featured{
+    background:var(--pine-dark);
+  }
+  .service-card.featured:hover{background:var(--pine-dark);}
+  .service-card.featured h3,
+  .service-card.featured p{color:var(--white);}
+  .service-card.featured p{color:#C6D9CD;}
+  .service-card.featured .service-fdi{
+    background:rgba(255,255,255,.12);
+    color:var(--sage);
+  }
+  .service-card.featured .service-tooth{color:var(--sage);}
+  .service-badge{
+    position:absolute;
+    top:-1px;right:-1px;
+    background:var(--emerald);
+    color:var(--white);
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.04em;
+    padding:6px 12px;
+    border-radius:0 0 0 12px;
+  }
   .service-fdi{
     font-family:var(--mono);
     font-size:12px;
@@ -289,8 +353,130 @@
     opacity:.9;
   }
 
+  /* ---------- implants spotlight & carousel ---------- */
+  .implants{
+    background:var(--mist);
+  }
+  .implants .wrap{
+    display:grid;
+    grid-template-columns:.85fr 1.15fr;
+    gap:60px;
+    align-items:center;
+  }
+  .implant-list{
+    margin-top:32px;
+    display:flex;flex-direction:column;gap:20px;
+  }
+  .implant-item{
+    display:flex;gap:14px;align-items:flex-start;
+  }
+  .implant-item svg{
+    width:22px;height:22px;flex-shrink:0;color:var(--emerald);margin-top:2px;
+  }
+  .implant-item h4{font-size:15.5px;font-weight:600;color:var(--pine-dark);}
+  .implant-item p{font-size:13.5px;color:#4B6156;margin-top:3px;line-height:1.55;}
+
+  /* Estilos do Carrossel de Fotos */
+  .carousel-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/5;
+    height: auto;
+    max-height: 560px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(14, 59, 44, 0.08);
+    background-color: var(--white);
+    border: 1px solid var(--line);
+  }
+
+  .carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .carousel-slide.active {
+    opacity: 1;
+  }
+
+  .carousel-slide::after{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg, rgba(14,59,44,.10), rgba(14,59,44,.02) 40%, rgba(14,59,44,.16));
+    pointer-events:none;
+  }
+
+  .carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Mude para 'contain' se quiser ver a foto 100% inteira sem cortes nas bordas */
+    object-position: center;
+    filter: saturate(.9) contrast(1.03);
+  }
+
+  .carousel-caption{
+    position:absolute;
+    left:20px;
+    bottom:20px;
+    z-index:5;
+    font-size:12.5px;
+    font-weight:500;
+    color:var(--white);
+    background:rgba(14,59,44,.55);
+    backdrop-filter:blur(4px);
+    padding:7px 13px;
+    border-radius:100px;
+    letter-spacing:.01em;
+  }
+
+  .carousel-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+    background: rgba(14, 59, 44, 0.4);
+    padding: 8px 14px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+
+  .dot:hover{ background-color:rgba(255,255,255,.8); }
+
+  .dot.active {
+    background-color: var(--white);
+    transform: scale(1.3);
+  }
+
   /* ---------- about ---------- */
-  .about{background:var(--pine-dark);color:var(--white);}
+  .about{background:var(--pine-dark);color:var(--white);position:relative;}
+  /* transição suave da seção clara (.implants, --mist) pra esta seção escura,
+     em vez do corte abrupto de cor entre as duas */
+  .about::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:48px;
+    background:linear-gradient(180deg, var(--mist), var(--pine-dark));
+    pointer-events:none;
+  }
   .about .wrap{
     display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:center;
   }
@@ -321,7 +507,14 @@
     display:flex;align-items:center;justify-content:center;
     overflow:hidden;
   }
-  .about-visual svg{width:72%;}
+  /* O painel usava só 1 instância pequena (72%) do traço do dente, centralizada —
+     lia como vazio/placeholder num painel grande. Reaproveitamos o MESMO path
+     (nenhum asset novo) em 2 cópias extras, maiores e giradas nos cantos, atrás
+     da ilustração principal, para preencher o espaço de forma intencional. */
+  .about-visual svg.tooth-main{width:88%;position:relative;z-index:2;}
+  .about-visual svg.tooth-bg{position:absolute;pointer-events:none;}
+  .about-visual svg.tooth-bg-1{width:62%;top:-10%;left:-16%;opacity:.13;transform:rotate(-20deg);}
+  .about-visual svg.tooth-bg-2{width:52%;bottom:-12%;right:-14%;opacity:.11;transform:rotate(26deg);}
 
   /* ---------- testimonials ---------- */
   .testimonials{background:var(--mist);}
@@ -333,6 +526,12 @@
     border-radius:16px;
     padding:32px 28px;
     border:1px solid var(--line);
+    transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .test-card:hover{
+    transform:translateY(-2px);
+    border-color:var(--emerald);
+    box-shadow:0 8px 20px rgba(14,59,44,.08);
   }
   .test-quote{
     font-family:var(--display);
@@ -397,12 +596,47 @@
   }
   input::placeholder{color:#9BB6A8;}
   select option{color:var(--ink);}
+  .consent{ display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5; color:#C6D9CD; cursor:pointer; margin-top:6px; padding:4px 0; }
+  .consent input[type="checkbox"]{ appearance:auto; -webkit-appearance:checkbox; width:18px; height:18px; min-width:18px; flex:0 0 auto; padding:0; margin:2px 0 0; border:none; border-radius:3px; background:none; accent-color:var(--emerald); cursor:pointer; }
+  .consent a{color:var(--white); text-decoration:underline;}
+  .consent strong{color:var(--white); font-weight:600;}
+  .consent-opt{color:#9BB6A8;}
+  /* tag "Obrigatório"/"Opcional" — a distinção não pode depender só do texto corrido:
+     precisa ser visível de relance, então usamos o mesmo padrão visual (mono, uppercase,
+     pill) já usado no .service-badge do card "Mais procurado". */
+  .consent-tag{
+    font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.05em;
+    text-transform:uppercase;padding:2px 7px;border-radius:4px;
+    display:inline-block;margin:0 6px 2px 0;vertical-align:1px;line-height:1.6;
+  }
+  .consent-tag.required{background:var(--emerald);color:var(--white);}
+  .consent-tag.optional{background:rgba(255,255,255,.12);color:#C6D9CD;}
   form .btn-primary{
     background:var(--white);color:var(--pine);
     margin-top:6px;justify-content:center;
   }
   form .btn-primary:hover{background:var(--sage);color:var(--pine-dark);}
   .form-note{font-size:11.5px;color:#9BB6A8;margin-top:2px;}
+
+  /* mensagem de retorno do envio do formulário (sucesso / erro) */
+  .form-feedback{
+    font-size:13.5px;line-height:1.5;
+    border-radius:10px;
+    padding:12px 14px;
+    border:1px solid transparent;
+  }
+  .form-feedback[hidden]{display:none;}
+  .form-feedback.is-success{
+    background:rgba(47,148,104,.18);
+    border-color:var(--emerald-light);
+    color:#DCF2E7;
+  }
+  .form-feedback.is-error{
+    background:rgba(255,255,255,.10);
+    border-color:#E8A8A8;
+    color:#FFE2E2;
+  }
+  form button[disabled]{opacity:.6;cursor:progress;}
 
   /* ---------- footer ---------- */
   footer{
@@ -425,6 +659,8 @@
     text-transform:uppercase;color:var(--sage);margin-bottom:16px;
   }
   .foot-col ul{display:flex;flex-direction:column;gap:11px;font-size:13.5px;}
+  .foot-contact li{display:flex;align-items:flex-start;gap:9px;}
+  .foot-contact li svg{width:16px;height:16px;flex-shrink:0;margin-top:1px;color:var(--sage);}
   .foot-col a:hover{color:var(--white);}
   .foot-bottom{
     padding-top:24px;display:flex;justify-content:space-between;
@@ -436,9 +672,9 @@
     position:fixed;
     right:26px;
     bottom:26px;
-    z-index:200;
+    z-index:200; 
     width:60px;height:60px;
-    border-radius:50%;
+    border-radius:50%; 
     background:var(--emerald);
     display:flex;align-items:center;justify-content:center;
     box-shadow:0 10px 28px rgba(14,59,44,.35), 0 2px 8px rgba(14,59,44,.2);
@@ -503,6 +739,8 @@
     .hero .wrap{grid-template-columns:1fr;}
     .hero-art{max-width:340px;margin:0 auto;order:-1;}
     .services-grid{grid-template-columns:repeat(2,1fr);}
+    .implants .wrap{grid-template-columns:1fr;}
+    .carousel-container{max-height:440px;order:-1;}
     .about .wrap{grid-template-columns:1fr;}
     .about-visual{max-width:320px;margin:0 auto;}
     .test-grid{grid-template-columns:1fr;}
@@ -511,6 +749,10 @@
   }
   @media (max-width:560px){
     .wrap{padding:0 20px;}
+    /* Abaixo de 560px, texto/CTA vêm antes da arte decorativa (mais
+       conversivo em telas pequenas) — no breakpoint de 921-560px a arte
+       ainda aparece primeiro (order:-1 herdado do bloco de 920px acima). */
+    .hero-art{order:0;}
     .services-grid{grid-template-columns:1fr;}
     .hero-stats{gap:22px;flex-wrap:wrap;}
     .form-row{grid-template-columns:1fr;}
@@ -531,6 +773,7 @@
     </a>
     <ul class="nav-links">
       <li><a href="#tratamentos">Tratamentos</a></li>
+      <li><a href="#implantes">Implantes</a></li>
       <li><a href="#sobre">Sobre</a></li>
       <li><a href="#depoimentos">Depoimentos</a></li>
       <li><a href="#contato">Contato</a></li>
@@ -555,6 +798,7 @@
           <a href="#contato" class="btn btn-primary">Agendar avaliação</a>
           <a href="#tratamentos" class="btn btn-outline">Ver tratamentos</a>
         </div>
+        <!-- PLACEHOLDER / A CONFIRMAR (product): "12 anos", "4.9/5 em mais de 800 avaliações" e "500+ implantes" são números de exemplo, sem fonte. O dono do site deve confirmar/documentar a fonte de cada estatística ou suavizar a redação antes do lançamento — não inventamos a fonte aqui. -->
         <div class="hero-stats">
           <div>
             <div class="stat-num">12 anos</div>
@@ -565,18 +809,19 @@
             <div class="stat-label">média em mais de<br>800 avaliações</div>
           </div>
           <div>
-            <div class="stat-num">6</div>
-            <div class="stat-label">especialidades sob<br>o mesmo teto</div>
+            <div class="stat-num">500+</div>
+            <div class="stat-label">implantes realizados<br>com sucesso</div>
           </div>
         </div>
       </div>
 
       <div class="hero-art">
-        <svg viewBox="0 0 420 440" fill="none">
-          <!-- abstract smile arc -->
+        <!-- viewBox recortado para o bounding box real do traço (antes 0 0 420 440,
+             com o conteúdo ocupando só ~60% da área) — preenche mais a coluna sem
+             alterar nenhum path/animação. -->
+        <svg viewBox="40 45 330 335" fill="none">
           <path class="smile-path" d="M60 160 Q210 340 360 160" />
           <path class="smile-path accent" style="animation-delay:.6s" d="M95 175 Q210 300 325 175" />
-          <!-- tooth marks along the arc -->
           <g stroke="#0E3B2C" stroke-width="1.4" stroke-linecap="round">
             <path class="art-dot" style="animation-delay:1.9s" d="M115 190 L112 210"/>
             <path class="art-dot" style="animation-delay:2s" d="M150 218 L148 240"/>
@@ -610,50 +855,132 @@
       <div class="section-head reveal">
         <div class="eyebrow">Tratamentos</div>
         <h2>Cada dente tem sua história. Nós cuidamos de todas elas.</h2>
-        <p>Organizamos nossos tratamentos como um dentista lê uma arcada: por região e função. Veja onde cada cuidado atua.</p>
+        <p>Da prevenção de rotina aos casos mais delicados, veja rapidinho onde cada tratamento atua e para quem ele é indicado.</p>
       </div>
 
       <div class="services-grid reveal">
         <div class="service-card">
-          <span class="service-fdi">18—48 · profilaxia</span>
-          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <span class="service-fdi">boca toda</span>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+            <path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M6.5 6V9M5 7.5H8" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+            <path d="M23.5 9V12M22 10.5H25" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+          </svg>
           <h3>Limpeza & Prevenção</h3>
           <p>Remoção de tártaro, aplicação de flúor e orientação de higiene para manter a arcada inteira saudável.</p>
         </div>
 
+        <div class="service-card featured">
+          <span class="service-badge">Mais procurado</span>
+          <span class="service-fdi">1 dente ao sorriso completo</span>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+            <path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M15 21.3V27.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M12.6 23.2h4.8M12.8 25h4.4M13 26.8h4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+          </svg>
+          <h3>Implantodontia</h3>
+          <p>De um único dente ao protocolo total (all-on-4/6), com cirurgia guiada por planejamento 3D e acompanhamento até a entrega da coroa final.</p>
+        </div>
+
         <div class="service-card">
-          <span class="service-fdi">11—22 · estética</span>
-          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <span class="service-fdi">dentes do sorriso</span>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+            <path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M15 1.2V3.4M9.8 2.6l1 1.9M20.2 2.6l-1 1.9M6.5 6.2l1.6 1.3M23.5 6.2l-1.6 1.3" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+          </svg>
           <h3>Clareamento Dental</h3>
           <p>Protocolo a laser ou moldeira caseira, focado nos dentes que aparecem no sorriso.</p>
         </div>
 
         <div class="service-card">
           <span class="service-fdi">arcada completa</span>
-          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+            <path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M6.5 15.5c3-1.3 14-1.3 17 0" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <rect x="7.6" y="14.3" width="2.1" height="2.1" rx=".3" stroke="currentColor" stroke-width="1"/>
+            <rect x="20.3" y="14.3" width="2.1" height="2.1" rx=".3" stroke="currentColor" stroke-width="1"/>
+          </svg>
           <h3>Ortodontia</h3>
           <p>Aparelho fixo ou alinhadores transparentes, com acompanhamento mensal do movimento dos dentes.</p>
         </div>
 
         <div class="service-card">
-          <span class="service-fdi">unitário · cirúrgico</span>
-          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
-          <h3>Implantodontia</h3>
-          <p>Reposição de dentes perdidos com planejamento guiado por imagem, do implante à coroa final.</p>
-        </div>
-
-        <div class="service-card">
-          <span class="service-fdi">dentição decídua</span>
-          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <span class="service-fdi">dentes de leite</span>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+            <path d="M15 8c-4.5 0-7.5 3-7.5 7.3 0 3 1.1 5.4 1.1 7.7 0 1.3.6 2 1.6 2 .9 0 1.3-.7 1.5-1.7.2-.9.4-1.7 1-1.7s.8.8 1 1.7c.2 1 .6 1.7 1.5 1.7s1.5-.8 1.5-1.7c0-.9.2-1.7.8-1.7s.6.8.8 1.7c.2 1 .6 1.7 1.5 1.7s1.6-.7 1.6-2c0-2.3 1.1-4.7 1.1-7.7C22.6 11 19.5 8 15 8z" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M12 14.5c.6.7 1.4 1 3 1s2.4-.3 3-1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+          </svg>
           <h3>Odontopediatria</h3>
           <p>Consultas lúdicas para os pequenos, pensadas para criar uma relação tranquila com o dentista.</p>
         </div>
 
         <div class="service-card">
           <span class="service-fdi">faceta · lente</span>
-          <svg class="service-tooth" viewBox="0 0 30 30" fill="none"><path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <svg class="service-tooth" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+            <path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.3" opacity=".5"/>
+            <path d="M15 5c-3.5 0-6 2.3-6 6.3 0 3.4 1.5 6.4 1.5 9.5 0 1.5.7 2.5 1.9 2.5s1.5-.8 1.9-2.3c.3-1.4.5-2.7 1.2-2.7s.9 1.3 1.2 2.7c.4 1.5.7 2.3 1.9 2.3s1.9-1 1.9-2.5c0-3.1 1.5-6.1 1.5-9.5C21 7.3 18.5 5 15 5z" stroke="currentColor" stroke-width="1.1" transform="translate(2.4,-1.6)"/>
+          </svg>
           <h3>Lentes de Contato Dental</h3>
           <p>Facetas ultrafinas de porcelana para uniformizar cor e formato sem desgastar o dente.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IMPLANTES EM DESTAQUE (COM CARROSSEL AUTOMÁTICO) -->
+  <section id="implantes" class="implants">
+    <div class="wrap">
+      <div class="reveal">
+        <div class="eyebrow">Especialidade em destaque</div>
+        <h2>Implantodontia: devolvemos a função e a naturalidade do seu sorriso.</h2>
+        <p class="hero-sub" style="margin-top:16px;">Da reposição de um único dente ao protocolo completo sobre implantes, cada caso é planejado em imagem 3D antes do primeiro corte — para você saber exatamente o que esperar.</p>
+
+        <div class="implant-list">
+          <div class="implant-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            <div>
+              <h4>Planejamento 3D guiado</h4>
+              <p>Tomografia computadorizada define o ponto exato do implante antes da cirurgia.</p>
+            </div>
+          </div>
+          <div class="implant-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            <div>
+              <h4>Cirurgia minimamente invasiva</h4>
+              <p>Técnicas guiadas reduzem tempo de cirurgia, inchaço e recuperação.</p>
+            </div>
+          </div>
+          <div class="implant-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            <div>
+              <h4>Do implante único ao protocolo total</h4>
+              <p>Atendemos desde a perda de um dente até reabilitação completa (all-on-4/6).</p>
+            </div>
+          </div>
+        </div>
+
+        <a href="#contato" class="btn btn-primary" style="margin-top:32px;">Agendar avaliação para implante</a>
+      </div>
+
+      <!-- Carrossel de Fotos Automático -->
+      <div class="reveal">
+        <!--
+          Fotos originais (foto 1..4.jpeg) são colagens verticais com 2-3 painéis
+          separados por uma marca d'água — não utilizáveis direto no carrossel.
+          implante-01.jpg é um recorte (painel único, proporção 4:5) gerado a partir
+          de foto 2.jpeg (painel inferior). implante-02.jpg (foto 1.jpeg, painel
+          superior) foi removido daqui: é um caso de tratamento ortodôntico (aparelho),
+          não de implante — não representa o que esta seção anuncia, então não deve
+          aparecer com legenda de "caso de implante" mesmo com uso de imagem autorizado
+          pela clínica. foto 3/4.jpeg foram descartadas: todos os painéis são macro
+          clínico extremo, sem recorte aproveitável para marketing.
+        -->
+        <div class="carousel-container">
+          <div class="carousel-slide active">
+            <img src="imagens/implante-01.jpg" alt="Sorriso reabilitado com implante, sem metal aparente">
+          </div>
+
+          <p class="carousel-caption">Caso real de reabilitação com implante</p>
         </div>
       </div>
     </div>
@@ -691,7 +1018,16 @@
       </div>
 
       <div class="about-visual reveal">
-        <svg viewBox="0 0 200 250" fill="none">
+        <!-- 2 cópias extras do MESMO traço de dente do ícone principal (não é um
+             asset novo), maiores e giradas, atrás da ilustração central, só para
+             preencher o painel — puramente decorativo, por isso aria-hidden. -->
+        <svg class="tooth-bg tooth-bg-1" viewBox="0 0 200 250" fill="none" aria-hidden="true" focusable="false">
+          <path d="M100 20c-22 0-38 16-38 42 0 24 10 44 10 66 0 10 5 17 13 17s11-6 13-16c2-9 3-18 8-18s6 9 8 18c2 10 5 16 13 16s13-7 13-17c0-22 10-42 10-66 0-26-16-42-38-42z" stroke="#FFFFFF" stroke-width="1.6"/>
+        </svg>
+        <svg class="tooth-bg tooth-bg-2" viewBox="0 0 200 250" fill="none" aria-hidden="true" focusable="false">
+          <path d="M100 20c-22 0-38 16-38 42 0 24 10 44 10 66 0 10 5 17 13 17s11-6 13-16c2-9 3-18 8-18s6 9 8 18c2 10 5 16 13 16s13-7 13-17c0-22 10-42 10-66 0-26-16-42-38-42z" stroke="#9FC4AE" stroke-width="1.6"/>
+        </svg>
+        <svg class="tooth-main" viewBox="0 0 200 250" fill="none">
           <path d="M100 20c-22 0-38 16-38 42 0 24 10 44 10 66 0 10 5 17 13 17s11-6 13-16c2-9 3-18 8-18s6 9 8 18c2 10 5 16 13 16s13-7 13-17c0-22 10-42 10-66 0-26-16-42-38-42z" stroke="#9FC4AE" stroke-width="1.6" opacity=".8"/>
           <path d="M100 45c-14 0-22 10-22 26 0 15 6 27 6 41 0 6 3 10 8 10s7-4 8-10c1-6 2-11 5-11s4 5 5 11c1 6 3 10 8 10s8-4 8-10c0-14 6-26 6-41 0-16-8-26-22-26z" stroke="#FFFFFF" stroke-width="1.4" opacity=".5"/>
         </svg>
@@ -700,6 +1036,7 @@
   </section>
 
   <!-- TESTIMONIALS -->
+  <!-- ATENÇÃO (compliance): a Resolução CFO-196/2019 restringe/veda a divulgação de depoimentos de pacientes em publicidade odontológica. Estes depoimentos e as estatísticas do hero são de exemplo. O dono do site deve avaliar esta seção com o responsável técnico/CRO-MG antes da publicação definitiva. Não removemos a seção — decisão do dono do site. -->
   <section id="depoimentos" class="testimonials">
     <div class="wrap">
       <div class="section-head reveal">
@@ -755,15 +1092,32 @@
           <div class="eyebrow">Agendamento</div>
           <h2>Marque sua avaliação e conheça seu plano de tratamento.</h2>
           <p>A primeira consulta inclui escaneamento digital e um plano por escrito, sem compromisso. Preencha o formulário ou fale direto pelo WhatsApp.</p>
-          <a href="https://wa.me/553186182875" target="_blank" rel="noopener" class="btn btn-outline" style="border-color:#fff;color:#fff;">Chamar no WhatsApp</a>
+          <!-- ATENÇÃO (product): 553133004455 tem cara de telefone fixo de BH (8 dígitos, sem o 9 do celular), não de número com WhatsApp. Este é o CTA mais visível da página — o dono do site DEVE confirmar que este é um número real com WhatsApp Business ativo antes do lançamento. Não alteramos o número, pois não temos o real. -->
+          <a href="https://wa.me/553133004455" target="_blank" rel="noopener" class="btn btn-outline" style="border-color:#fff;color:#fff;">Chamar no WhatsApp</a>
         </div>
-        <form onsubmit="event.preventDefault(); this.reset(); alert('Recebemos seu pedido! Entraremos em contato em breve.');">
-          <input type="text" placeholder="Nome completo" required>
+
+        <!--
+          Formulário de agendamento — enviado por AJAX para a Formspree.
+          A lógica de envio está no <script> no fim do arquivo (bloco "4) Envio do formulário").
+          O JS lê o formulário com new FormData(form), ou seja, é agnóstico aos nomes dos
+          campos — os names abaixo são os finais definidos pelo frontend.
+        -->
+        <!--
+          SEGURANÇA: method="post" + action são obrigatórios aqui, mesmo o envio real
+          sendo feito via fetch() no JS. Sem eles, se o <script> falhar ao carregar/executar
+          (ex.: IntersectionObserver ausente em WebView antigo), o navegador cai no
+          comportamento padrão do form, que é GET — e nome/telefone/dado de saúde
+          vazariam pela URL, indo pro histórico do navegador. Mantenha o ID abaixo
+          IGUAL ao FORMSPREE_ENDPOINT definido no <script> (bloco "4"); atualize os dois
+          juntos quando o ID real da Formspree for configurado.
+        -->
+        <form id="booking-form" method="post" action="https://formspree.io/f/YOUR_FORM_ID">
+          <input type="text" name="nome" placeholder="Nome completo" required>
           <div class="form-row">
-            <input type="tel" placeholder="Telefone / WhatsApp" required>
-            <input type="text" placeholder="Melhor horário" >
+            <input type="tel" name="telefone" placeholder="Telefone / WhatsApp" required>
+            <input type="text" name="melhor_horario" placeholder="Melhor horário" >
           </div>
-          <select required>
+          <select name="tratamento" required>
             <option value="" disabled selected>Tratamento de interesse</option>
             <option>Limpeza & Prevenção</option>
             <option>Clareamento Dental</option>
@@ -773,8 +1127,39 @@
             <option>Lentes de Contato Dental</option>
             <option>Ainda não sei</option>
           </select>
+
+          <!-- Consentimento LGPD (art. 11 dado sensível de saúde + art. 33 transferência internacional) — texto definido por compliance, não parafrasear. -->
+          <label class="consent">
+            <input type="checkbox" name="consentimento_lgpd" value="sim" required>
+            <span>
+              <span class="consent-tag required">Obrigatório</span>Autorizo a Clínac a tratar meu nome, telefone e o tratamento de interesse informado —
+              que é <strong>dado de saúde</strong> — para retornar meu contato e agendar minha avaliação.
+              Estou ciente de que esses dados serão <strong>armazenados nos Estados Unidos</strong>
+              pelo provedor do formulário (Formspree, Inc.). Li e aceito a
+              <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>
+              e os <a href="termos.html" target="_blank" rel="noopener">Termos de Uso</a>.
+            </span>
+          </label>
+
+          <label class="consent consent-opt">
+            <input type="checkbox" name="consentimento_marketing" value="sim">
+            <span>
+              <span class="consent-tag optional">Opcional</span>Quero receber novidades, campanhas e promoções da Clínac.
+              Posso cancelar quando quiser, sem prejuízo ao meu atendimento.
+            </span>
+          </label>
+
+          <input type="hidden" name="politica_versao" value="PRIVACIDADE v1.0 - 2026-08-13">
+
+          <!-- Assunto do e-mail que a Formspree envia para a clínica (campo de controle da Formspree). -->
+          <input type="hidden" name="_subject" value="Novo pedido de avaliação — site Clínac">
+
+          <!-- Honeypot anti-spam da Formspree: campo escondido do usuário; a Formspree descarta no servidor qualquer envio em que _gotcha venha preenchido. -->
+          <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
+
           <button type="submit" class="btn btn-primary">Solicitar avaliação</button>
-          <p class="form-note">Ao enviar, você concorda em ser contatado pela Clínac.</p>
+          <p class="form-feedback" id="booking-feedback" role="status" aria-live="polite" hidden></p>
+          <p class="form-note">Formulário para maiores de 18 anos. Se a avaliação for para criança ou adolescente, o preenchimento deve ser feito pelo responsável legal. Não envie CPF, número de convênio ou informações clínicas por aqui.</p>
         </form>
       </div>
     </div>
@@ -798,18 +1183,24 @@
           <li><a href="#tratamentos">Tratamentos</a></li>
           <li><a href="#sobre">Sobre nós</a></li>
           <li><a href="#depoimentos">Depoimentos</a></li>
+          <li><a href="privacidade.html">Política de Privacidade</a></li>
+          <li><a href="termos.html">Termos de Uso</a></li>
         </ul>
       </div>
       <div class="foot-col">
         <h5>Contato</h5>
-        <ul>
-          <li>(31) 3300-4455</li>
-          <li>contato@clinac.com.br</li>
-          <li>Rua das Acácias, 210 — Savassi, BH</li>
+        <ul class="foot-contact">
+          <!-- PLACEHOLDER: site owner must replace with real value before launch -->
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.8 21 3 13.2 3 3.9c0-.6.4-1 1-1h3.3c.6 0 1 .4 1 1 0 1.2.2 2.5.6 3.6.1.4 0 .8-.2 1L6.6 10.8z"/></svg>(31) 3300-4455</li>
+          <!-- PLACEHOLDER: site owner must replace with real value before launch -->
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 6.5l8 6 8-6"/></svg>contato@clinac.com.br</li>
+          <!-- PLACEHOLDER: site owner must replace with real value before launch -->
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.6 7-12a7 7 0 0 0-14 0c0 5.4 7 12 7 12z"/><circle cx="12" cy="10" r="2.3"/></svg>Rua das Acácias, 210 — Savassi, BH</li>
         </ul>
       </div>
       <div class="foot-col">
         <h5>Horários</h5>
+        <!-- PLACEHOLDER: site owner must replace with real value before launch -->
         <ul>
           <li>Seg–Sex · 8h às 19h</li>
           <li>Sábado · 8h às 13h</li>
@@ -819,11 +1210,13 @@
     </div>
     <div class="foot-bottom">
       <span>© 2026 Clínac Odontologia. Todos os direitos reservados.</span>
+      <!-- PLACEHOLDER: site owner must replace with real CRO-MG registration number before launch (required by CFO-196/2019 for dental advertising) -->
       <span>CRO-MG 00000</span>
     </div>
   </div>
 </footer>
 
+<!-- ATENÇÃO (product): mesmo número acima, mesmo alerta — 553133004455 tem cara de fixo, não de celular com WhatsApp. Confirmar antes do lançamento. -->
 <a href="https://wa.me/553133004455" target="_blank" rel="noopener" class="wa-float" aria-label="Falar no WhatsApp">
   <span class="wa-tooltip">Fale conosco no WhatsApp</span>
   <svg viewBox="0 0 24 24" fill="currentColor">
@@ -833,25 +1226,314 @@
 </a>
 
 <script>
-  // mobile menu (simple toggle -> reuse nav-links display)
-  const toggle = document.querySelector('.menu-toggle');
-  const links = document.querySelector('.nav-links');
+  /* ==========================================================
+     JAVASCRIPT
+     1) Menu Mobile
+     2) Scroll Reveal
+     3) Carrossel de Fotos Automático
+     4) Envio do formulário de agendamento (Formspree, via AJAX)
+     ========================================================== */
+
+  // 1) Menu Mobile
+  const toggle = document.querySelector('.menu-toggle'); 
+  const links = document.querySelector('.nav-links');    
+
   if(toggle){
     toggle.addEventListener('click', () => {
       const open = links.style.display === 'flex';
       links.style.display = open ? 'none' : 'flex';
-      links.style.cssText += open ? '' : 'position:absolute;top:100%;left:0;right:0;background:#FBFDFC;flex-direction:column;padding:20px 32px;gap:18px;border-bottom:1px solid #D9E8DF;';
+      links.style.cssText += open
+        ? '' 
+        : 'position:absolute;top:100%;left:0;right:0;background:#FBFDFC;flex-direction:column;padding:20px 32px;gap:18px;border-bottom:1px solid #D9E8DF;';
     });
   }
 
-  // scroll reveal
+  // 2) Scroll Reveal
   const revealEls = document.querySelectorAll('.reveal');
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{
-      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if(e.isIntersecting){
+        e.target.classList.add('in'); 
+        io.unobserve(e.target);        
+      }
     });
-  }, {threshold:.15});
-  revealEls.forEach(el=>io.observe(el));
+  }, {
+    threshold: .15 
+  });
+
+  revealEls.forEach(el => io.observe(el));
+
+  // 3) Carrossel Automático
+  let slideIndex = 0;
+  const slides = document.querySelectorAll('.carousel-slide');
+  const dots = document.querySelectorAll('.dot');
+  const slideInterval = 4000; // Troca a cada 4 segundos
+
+  function showSlide(index) {
+    slides.forEach((slide, i) => {
+      slide.classList.remove('active');
+      if (dots[i]) { dots[i].classList.remove('active'); dots[i].setAttribute('aria-selected', 'false'); }
+    });
+
+    slideIndex = (index + slides.length) % slides.length;
+
+    slides[slideIndex].classList.add('active');
+    if (dots[slideIndex]) { dots[slideIndex].classList.add('active'); dots[slideIndex].setAttribute('aria-selected', 'true'); }
+  }
+
+  // As bolinhas são <span role="tab" tabindex="0">, então precisam responder
+  // a Enter/Espaço para quem navega só pelo teclado (o onclick no markup só
+  // cobre clique de mouse/toque).
+  dots.forEach((dot, i) => {
+    dot.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        currentSlide(i);
+      }
+    });
+  });
+
+  function nextSlide() {
+    showSlide(slideIndex + 1);
+  }
+
+  function currentSlide(index) {
+    showSlide(index);
+    resetTimer();
+  }
+
+  // Com 1 única foto (ver comentário acima do carrossel no HTML), não há o que
+  // avançar — evita o setInterval/re-render inútil a cada 4s.
+  let autoSlide = slides.length > 1 ? setInterval(nextSlide, slideInterval) : null;
+
+  function resetTimer() {
+    if (slides.length <= 1) return;
+    clearInterval(autoSlide);
+    autoSlide = setInterval(nextSlide, slideInterval);
+  }
+
+  /* ==========================================================
+     4) Envio do formulário de agendamento (Formspree, via AJAX)
+     ==========================================================
+
+     >>> AÇÃO OBRIGATÓRIA DO DONO DO SITE — O FORMULÁRIO NÃO ENVIA NADA ATÉ ISSO SER FEITO <<<
+
+       1. Crie uma conta gratuita em https://formspree.io (plano Free).
+       2. Crie um novo form e aponte-o para o e-mail que deve receber os pedidos
+          de agendamento (ex. contato@clinac.com.br).
+       3. A Formspree vai mostrar um endpoint no formato:
+              https://formspree.io/f/xzbqwerty
+          O trecho final (ex. xzbqwerty) é o ID do seu form.
+       4. Substitua YOUR_FORM_ID na constante abaixo por esse ID real.
+       5. Envie um teste pelo site: o PRIMEIRO envio de um form novo precisa ser
+          confirmado por um e-mail de verificação que a Formspree manda para você.
+
+     O ID do form é um identificador PÚBLICO (fica visível no código do site) — não é
+     uma senha nem um segredo, e por isso pode ser commitado sem risco. A contrapartida
+     é que qualquer pessoa pode postar direto no endpoint: a proteção contra spam/abuso
+     é o honeypot _gotcha no markup + o rate limit e o painel da própria Formspree.
+     O plano Free NÃO tem filtro de spam nem captcha, e tem limite de 50 envios/mês —
+     passando disso, os envios são recusados até virar o mês (ou até fazer upgrade).
+
+     ANTI-SPAM (honeypot): o campo _gotcha é adicionado no MARKUP pelo frontend, não aqui.
+     Este código lê o formulário inteiro com new FormData(form), sem citar nome de campo
+     nenhum — então _gotcha, checkboxes de consentimento, campos renomeados ou campos
+     novos passam a ser enviados automaticamente, sem NENHUMA alteração neste JS.
+
+     EVENTOS PARA ANALYTICS (disparados em document, sempre, independente da UI):
+       - 'clinac:form-submit-success' → envio aceito pela Formspree
+       - 'clinac:form-submit-error'   → falha (rede, erro da Formspree ou endpoint não configurado)
+     O detail dos eventos NÃO carrega nada digitado pelo usuário (nome, telefone,
+     tratamento). São dados pessoais — e, no caso do tratamento, dado de saúde. Eles não
+     podem vazar para ferramenta de analytics de terceiro só por conveniência de tracking.
+     ========================================================== */
+
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+
+  const bookingForm = document.getElementById('booking-form');
+  const bookingFeedback = document.getElementById('booking-feedback');
+
+  if (bookingForm) {
+    const submitBtn = bookingForm.querySelector('button[type="submit"]');
+    const submitLabel = submitBtn ? submitBtn.textContent : '';
+    let sending = false;
+
+    function showFeedback(type, message) {
+      if (!bookingFeedback) return;
+      bookingFeedback.textContent = message;
+      bookingFeedback.classList.toggle('is-success', type === 'success');
+      bookingFeedback.classList.toggle('is-error', type === 'error');
+      bookingFeedback.hidden = false;
+    }
+
+    function emit(name, detail) {
+      document.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
+    }
+
+    function setSending(isSending) {
+      sending = isSending;
+      if (!submitBtn) return;
+      submitBtn.disabled = isSending;
+      submitBtn.textContent = isSending ? 'Enviando…' : submitLabel;
+    }
+
+    // Tenta extrair a mensagem de erro da Formspree, que pode vir como
+    // { errors: [{ message }] } ou { error: "..." }.
+    function formspreeError(data) {
+      if (!data) return '';
+      if (Array.isArray(data.errors) && data.errors.length) {
+        return data.errors.map(e => e && e.message).filter(Boolean).join(' ');
+      }
+      return typeof data.error === 'string' ? data.error : '';
+    }
+
+    bookingForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (sending) return;
+
+      // Segurança contra "falso sucesso": se o ID placeholder não foi trocado, não
+      // adianta postar (daria 404 e uma mensagem genérica). Avisa e falha explicitamente.
+      if (FORMSPREE_ENDPOINT.includes('YOUR_FORM_ID')) {
+        console.error('[Clínac] Formulário não configurado: troque YOUR_FORM_ID em FORMSPREE_ENDPOINT pelo ID real do form na Formspree.');
+        showFeedback('error', 'O formulário ainda não está configurado. Por favor, fale conosco pelo WhatsApp ou por (31) 3300-4455.');
+        emit('clinac:form-submit-error', { reason: 'not_configured' });
+        return;
+      }
+
+      if (bookingFeedback) bookingFeedback.hidden = true;
+      setSending(true);
+
+      // Timeout de rede: sem isso, uma conexão ruim deixa o botão travado em "Enviando…".
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
+      try {
+        // FormData(form) = todos os campos com name= que existirem no formulário,
+        // sem lista fixa. É isso que faz este código sobreviver a mudanças no markup.
+        const response = await fetch(FORMSPREE_ENDPOINT, {
+          method: 'POST',
+          body: new FormData(bookingForm),
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        });
+
+        // A Formspree responde JSON; se vier outra coisa, não deixa quebrar o fluxo.
+        const data = await response.json().catch(() => null);
+
+        if (response.ok) {
+          // ORDEM IMPORTA: o evento é disparado ANTES do reset() de propósito —
+          // o bloco 5) (analytics) escuta 'clinac:form-submit-success' e precisa
+          // ler o <select name="tratamento"> enquanto o valor escolhido ainda
+          // está no DOM. Se o reset() rodasse antes, o select já estaria vazio
+          // quando o listener de analytics executasse (dispatchEvent é síncrono,
+          // mas o valor já teria sido limpo) e o evento 'treatment_interest_selected'
+          // nunca carregaria dado nenhum — falha silenciosa, não um erro visível.
+          emit('clinac:form-submit-success', { form: 'booking' });
+          bookingForm.reset();
+          showFeedback('success', 'Recebemos seu pedido! Nossa equipe entra em contato em breve para confirmar o horário.');
+        } else {
+          const detail = formspreeError(data);
+          console.error('[Clínac] Formspree recusou o envio:', response.status, detail || data);
+          showFeedback('error', (detail ? detail + ' ' : '') + 'Não conseguimos enviar seu pedido. Tente novamente ou fale conosco pelo WhatsApp.');
+          emit('clinac:form-submit-error', { reason: 'rejected', status: response.status });
+        }
+      } catch (err) {
+        const aborted = err && err.name === 'AbortError';
+        console.error('[Clínac] Falha de rede no envio do formulário:', err);
+        showFeedback('error', aborted
+          ? 'O envio demorou demais para responder. Verifique sua conexão e tente novamente, ou fale conosco pelo WhatsApp.'
+          : 'Não conseguimos enviar seu pedido agora. Verifique sua conexão e tente novamente, ou fale conosco pelo WhatsApp.');
+        emit('clinac:form-submit-error', { reason: aborted ? 'timeout' : 'network' });
+      } finally {
+        clearTimeout(timeout);
+        setSending(false);
+      }
+    });
+  }
+
+  /* ==========================================================
+     5) Analytics / Instrumentação (métricas de sucesso definidas por product)
+     ==========================================================
+
+     PONTO ÚNICO DE INTEGRAÇÃO: trackEvent(name, props). Trocar de ferramenta
+     de analytics é editar SÓ o corpo desta função — nenhum outro código deste
+     bloco muda. Por padrão, sem nenhuma conta de analytics configurada, os
+     eventos só vão para o console (console.debug): nada sai do navegador.
+
+     >>> PARA LIGAR UMA FERRAMENTA DE VERDADE (ex. Plausible) <<<
+       1. Adicione o snippet do provedor no <head>, ex. Plausible:
+            <script defer data-domain="SEU-DOMINIO" src="https://plausible.io/js/script.js"><\/script>
+          (obs.: a barra em "<\/script>" acima é só para este comentário não
+          fechar a tag <script> real deste arquivo — cole o snippet sem ela.)
+       2. Troque o corpo de trackEvent() abaixo pela chamada real do SDK,
+          ex.: if (window.plausible) window.plausible(name, { props: props });
+       Nenhum outro ponto deste arquivo precisa mudar.
+
+     FERRAMENTA RECOMENDADA (decisão do dono do site, não fizemos essa conta):
+       Plausible (ou equivalente "privacy-first": Fathom, Simple Analytics...).
+       Por quê: site estático sem backend próprio, precisa só de contagem de
+       eventos e funil simples — não de um data warehouse. E, principalmente,
+       compliance já confirmou que este site NÃO precisa de banner de cookies
+       hoje; Plausible/Fathom não usam cookie nem fingerprint, então não
+       re-introduzem essa obrigação. TROCA A CONSIDERAR: GA4 é gratuito e
+       Plausible/Fathom cobram uma mensalidade pequena — GA4 usa cookies (ou,
+       no mínimo, IDs client-side) e é bem mais pesado para o que este site
+       precisa, o que reativaria a exigência de banner de cookie/consentimento
+       que hoje NÃO existe no site. Ferramenta final é decisão do dono do site.
+
+     EVENTOS DISPARADOS E O QUE CADA UM CARREGA (nunca nome/telefone/e-mail):
+       - whatsapp_click
+           dispara no clique nos DOIS pontos de contato do WhatsApp.
+           prop: { source: 'floating' | 'inline' }
+       - form_submit_success
+           dispara só quando a Formspree confirma o envio (escuta o evento
+           'clinac:form-submit-success' do bloco 4 — não duplicamos a lógica
+           de envio, só escutamos). Não carrega propriedade nenhuma: é usado
+           como contagem de conversão confirmada, não como registro de quem
+           converteu.
+           props: {}
+       - treatment_interest_selected
+           dispara junto com form_submit_success, no mesmo instante. Lê o
+           valor do <select name="tratamento"> diretamente do DOM da própria
+           página (nunca reenviado por outro lugar, nunca associado a
+           nome/telefone) — é só o rótulo da opção escolhida (ex. "Ortodontia"),
+           tratado como categoria agregada, não texto livre do usuário.
+           prop: { treatment: <rótulo da opção selecionada> }
+
+     Sem cookie, sem localStorage, sem ID entre sessões, sem fingerprint:
+     cada evento carrega só o que está descrito acima, por page view.
+     ========================================================== */
+
+  function trackEvent(name, props) {
+    // PLACEHOLDER — nenhuma conta de analytics real configurada ainda.
+    // Ver instruções acima para trocar por Plausible/Fathom/etc.
+    console.debug('[Clínac][analytics]', name, props || {});
+  }
+
+  // whatsapp_click — botão flutuante (canto da tela) e link dentro da caixa
+  // de agendamento, distinguidos por 'source'.
+  const waFloating = document.querySelector('a.wa-float');
+  const waInline = document.querySelector('.booking-left a[href^="https://wa.me/"]');
+
+  if (waFloating) {
+    waFloating.addEventListener('click', () => trackEvent('whatsapp_click', { source: 'floating' }));
+  }
+  if (waInline) {
+    waInline.addEventListener('click', () => trackEvent('whatsapp_click', { source: 'inline' }));
+  }
+
+  // form_submit_success + treatment_interest_selected — dependem só do
+  // evento que o bloco 4) já dispara em document; não duplicamos a lógica
+  // de envio da Formspree aqui, só escutamos.
+  const treatmentSelect = document.querySelector('#booking-form select[name="tratamento"]');
+
+  document.addEventListener('clinac:form-submit-success', () => {
+    trackEvent('form_submit_success', {});
+
+    if (treatmentSelect && treatmentSelect.value) {
+      trackEvent('treatment_interest_selected', { treatment: treatmentSelect.value });
+    }
+  });
 </script>
 
 </body>
