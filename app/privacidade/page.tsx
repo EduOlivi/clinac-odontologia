@@ -95,32 +95,24 @@ export default function PrivacidadePage() {
           </tr>
           <tr>
             <td>Endereço</td>
-            <td>
-              <span className={styles.fill}>[PREENCHER: endereço completo com CEP]</span>
-            </td>
+            <td>Rua Desembargador Ribeiro da Luz, 462 — Barreiro, Belo Horizonte/MG, 30640-040</td>
           </tr>
           <tr>
             <td>Registro da pessoa jurídica no CRO-MG</td>
-            <td>
-              <span className={styles.fill}>[PREENCHER: nº de inscrição da clínica no CRO-MG]</span>
-            </td>
+            <td>EPAO 4909</td>
           </tr>
           <tr>
             <td>Responsável Técnico</td>
-            <td>
-              <span className={styles.fill}>[PREENCHER: nome do cirurgião-dentista responsável técnico]</span>
-            </td>
+            <td>Simone Oliveira</td>
           </tr>
           <tr>
             <td>CRO do Responsável Técnico</td>
-            <td>
-              <span className={styles.fill}>[PREENCHER: CRO-MG nº]</span>
-            </td>
+            <td>CRO-MG 49483</td>
           </tr>
           <tr>
             <td>Site</td>
             <td>
-              <span className={styles.fill}>[PREENCHER: URL pública do site]</span>
+              <span className={styles.fill}>[PREENCHER: URL pública do site — depende do domínio final, ver docs/DEPLOY.md]</span>
             </td>
           </tr>
         </tbody>
@@ -128,9 +120,9 @@ export default function PrivacidadePage() {
       <p>
         <strong>Canal de contato para assuntos de privacidade e dados pessoais:</strong>
         <br />
-        <span className={styles.fill}>[PREENCHER: e-mail dedicado, ex. privacidade@clinac.com.br]</span>
+        clinacodonto@gmail.com
         <br />
-        <span className={styles.fill}>[PREENCHER: telefone, se desejar oferecer atendimento por telefone]</span>
+        (31) 98618-2875
       </p>
 
       <h2>2. O que este site coleta</h2>
@@ -734,10 +726,9 @@ export default function PrivacidadePage() {
         </li>
       </ol>
       <p>
-        <strong>Como exercer:</strong> envie o pedido para{" "}
-        <span className={styles.fill}>[PREENCHER: e-mail de privacidade]</span>, identificando-se.
-        Responderemos em até <strong>15 (quinze) dias</strong> contados do recebimento, conforme o
-        art. 19, II, da LGPD.
+        <strong>Como exercer:</strong> envie o pedido para clinacodonto@gmail.com,
+        identificando-se. Responderemos em até <strong>15 (quinze) dias</strong> contados do
+        recebimento, conforme o art. 19, II, da LGPD.
       </p>
       <p>
         <strong>Como confirmamos que é você.</strong> O formulário só coleta nome e telefone, então
@@ -868,7 +859,8 @@ export default function PrivacidadePage() {
         titulares e para a ANPD:
       </p>
       <p>
-        <span className={styles.fill}>[PREENCHER: e-mail e responsável pelo canal de privacidade]</span>
+        clinacodonto@gmail.com —{" "}
+        <span className={styles.fill}>[PREENCHER: nome/cargo de quem responde por esse canal na clínica]</span>
       </p>
       <p>
         <span className={styles.fill}>
@@ -895,21 +887,21 @@ export default function PrivacidadePage() {
         leu, e conseguimos demonstrar isso se você ou a ANPD perguntarem (art. 8º, § 2º, da LGPD).
       </p>
 
-      <h2>11. Publicidade odontológica (pendência do responsável técnico)</h2>
+      <h2>11. Publicidade odontológica</h2>
       <p>
-        <span className={styles.fill}>
-          [PENDÊNCIA REGULATÓRIA — NÃO É QUESTÃO DE PROTEÇÃO DE DADOS, MAS BLOQUEIA A PUBLICAÇÃO DO
-          SITE.]
-        </span>
+        A <strong>Resolução CFO-196/2019</strong> restringe a publicidade odontológica e{" "}
+        <strong>veda a divulgação de depoimentos de pacientes</strong>. Em 2026-08-14 o dono do
+        site confirmou que a seção &ldquo;Depoimentos&rdquo; era fictícia (texto de exemplo, nunca
+        foram pacientes reais) e as estatísticas do topo da página (&ldquo;12 anos&rdquo;,
+        &ldquo;4.9/5 em mais de 800 avaliações&rdquo;, &ldquo;500+ implantes&rdquo;) não tinham
+        fonte — a seção de depoimentos foi <strong>removida</strong> e as estatísticas foram
+        trocadas por diferenciais qualitativos, sem número não verificado.
       </p>
       <div className={styles.warn}>
-        <strong>Atenção.</strong> A <strong>Resolução CFO-196/2019</strong> restringe a publicidade
-        odontológica e <strong>veda a divulgação de depoimentos de pacientes</strong>. A seção
-        &ldquo;Depoimentos&rdquo; e as estatísticas do topo da página (&ldquo;12 anos&rdquo;,
-        &ldquo;4.9/5 em mais de 800 avaliações&rdquo;, &ldquo;500+ implantes&rdquo;), que não têm
-        fonte documentada, precisam do aval do <strong>responsável técnico junto ao CRO-MG</strong>{" "}
-        antes da publicação definitiva. Isso não foi resolvido por nenhuma revisão técnica —{" "}
-        <strong>não é um ajuste de código</strong>, é uma decisão da própria clínica.
+        <strong>Se um depoimento real de paciente for adicionado no futuro</strong>, ele precisa do
+        aval do <strong>responsável técnico junto ao CRO-MG</strong> antes da publicação — a
+        Resolução CFO-196/2019 restringe esse tipo de conteúdo mesmo quando genuíno e autorizado
+        pelo paciente. Isso não é um ajuste de código, é uma decisão da própria clínica.
       </div>
 
       <h2>12. Foro</h2>

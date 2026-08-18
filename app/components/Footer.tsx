@@ -31,9 +31,6 @@ export default function Footer() {
                 <a href="#sobre">Sobre nós</a>
               </li>
               <li>
-                <a href="#depoimentos">Depoimentos</a>
-              </li>
-              <li>
                 <Link href="/privacidade">Política de Privacidade</Link>
               </li>
               <li>
@@ -44,7 +41,6 @@ export default function Footer() {
           <div className="foot-col">
             <h5>Contato</h5>
             <ul className="foot-contact">
-              {/* PLACEHOLDER: site owner must replace with real value before launch */}
               <li>
                 <svg
                   viewBox="0 0 24 24"
@@ -57,9 +53,8 @@ export default function Footer() {
                 >
                   <path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.8 21 3 13.2 3 3.9c0-.6.4-1 1-1h3.3c.6 0 1 .4 1 1 0 1.2.2 2.5.6 3.6.1.4 0 .8-.2 1L6.6 10.8z" />
                 </svg>
-                (31) 3300-4455
+                (31) 98618-2875
               </li>
-              {/* PLACEHOLDER: site owner must replace with real value before launch */}
               <li>
                 <svg
                   viewBox="0 0 24 24"
@@ -73,9 +68,8 @@ export default function Footer() {
                   <rect x="3" y="5" width="18" height="14" rx="2" />
                   <path d="M4 6.5l8 6 8-6" />
                 </svg>
-                contato@clinac.com.br
+                clinacodonto@gmail.com
               </li>
-              {/* PLACEHOLDER: site owner must replace with real value before launch */}
               <li>
                 <svg
                   viewBox="0 0 24 24"
@@ -89,24 +83,22 @@ export default function Footer() {
                   <path d="M12 22s7-6.6 7-12a7 7 0 0 0-14 0c0 5.4 7 12 7 12z" />
                   <circle cx="12" cy="10" r="2.3" />
                 </svg>
-                Rua das Acácias, 210 — Savassi, BH
+                Rua Desembargador Ribeiro da Luz, 462 — Barreiro, Belo Horizonte/MG, 30640-040
               </li>
             </ul>
           </div>
           <div className="foot-col">
             <h5>Horários</h5>
-            {/* PLACEHOLDER: site owner must replace with real value before launch */}
             <ul>
-              <li>Seg–Sex · 8h às 19h</li>
-              <li>Sábado · 8h às 13h</li>
-              <li>Domingo · Fechado</li>
+              <li>Segunda a quinta · 8h às 18h</li>
+              <li>Sexta · 8h às 15h</li>
+              <li>Sábado e domingo · Fechado</li>
             </ul>
           </div>
         </div>
         <div className="foot-bottom">
           <span>© 2026 Clínac Odontologia. Todos os direitos reservados.</span>
-          {/* PLACEHOLDER: site owner must replace with real CRO-MG registration number before launch (required by CFO-196/2019 for dental advertising) */}
-          <span>CRO-MG 00000</span>
+          <span>Resp. téc. Simone Oliveira — CRO-MG 49483 · EPAO 4909</span>
         </div>
       </div>
     </footer>

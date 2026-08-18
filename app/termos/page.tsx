@@ -98,47 +98,35 @@ export default function TermosPage() {
           </tr>
           <tr>
             <td>Endereço</td>
-            <td>
-              <span className={styles.fill}>[PREENCHER: endereço completo com CEP]</span>
-            </td>
+            <td>Rua Desembargador Ribeiro da Luz, 462 — Barreiro, Belo Horizonte/MG, 30640-040</td>
           </tr>
           <tr>
             <td>Registro da pessoa jurídica no CRO-MG</td>
-            <td>
-              <span className={styles.fill}>[PREENCHER: nº de inscrição da clínica]</span>
-            </td>
+            <td>EPAO 4909</td>
           </tr>
           <tr>
             <td>Responsável Técnico</td>
-            <td>
-              <span className={styles.fill}>[PREENCHER: nome do cirurgião-dentista responsável técnico]</span>
-            </td>
+            <td>Simone Oliveira</td>
           </tr>
           <tr>
             <td>CRO do Responsável Técnico</td>
-            <td>
-              <span className={styles.fill}>[PREENCHER: CRO-MG nº]</span>
-            </td>
+            <td>CRO-MG 49483</td>
           </tr>
           <tr>
             <td>E-mail de contato</td>
-            <td>
-              <span className={styles.fill}>[PREENCHER]</span>
-            </td>
+            <td>clinacodonto@gmail.com</td>
           </tr>
           <tr>
             <td>Telefone</td>
-            <td>
-              <span className={styles.fill}>[PREENCHER]</span>
-            </td>
+            <td>(31) 98618-2875</td>
           </tr>
         </tbody>
       </table>
       <p>
         <strong>Obrigatório, não decorativo.</strong> A Resolução CFO-196/2019 exige a
         identificação do cirurgião-dentista e do respectivo número de inscrição no CRO em material
-        de divulgação. O rodapé do site hoje exibe <code>CRO-MG 00000</code>, que é um valor de
-        exemplo — precisa ser substituído pelo número real antes da publicação.
+        de divulgação. O rodapé do site já exibe o número real (<code>CRO-MG 49483</code>, resp.
+        técnica Simone Oliveira, mais o registro da pessoa jurídica <code>EPAO 4909</code>).
       </p>
 
       <h2>3. Finalidade do site</h2>
@@ -265,14 +253,17 @@ export default function TermosPage() {
 
       <h2>8. Depoimentos e conteúdo de pacientes</h2>
       <p>
-        <span className={styles.fill}>[PREENCHER — PENDÊNCIA REGULATÓRIA, ver observação abaixo]</span>
+        Este site <strong>não publica depoimentos de pacientes</strong>. Uma seção de depoimentos
+        fictícios (texto de exemplo, usado apenas como referência de layout durante o
+        desenvolvimento) foi removida em 2026-08-14, após o dono do site confirmar que o conteúdo
+        não era real.
       </p>
       <div className={styles.warn}>
-        <strong>Atenção.</strong> A Resolução CFO-196/2019 <strong>veda a divulgação de depoimentos
-        de pacientes</strong> em publicidade odontológica. A seção &ldquo;Depoimentos&rdquo;
-        atualmente publicada no site precisa ser avaliada pelo responsável técnico junto ao
-        CRO-MG antes da publicação definitiva. Esta cláusula só faz sentido se a seção for mantida
-        em formato admitido pela norma.
+        <strong>Atenção, se esta seção for reintroduzida no futuro.</strong> A Resolução
+        CFO-196/2019 <strong>veda a divulgação de depoimentos de pacientes</strong> em publicidade
+        odontológica. Qualquer depoimento real só pode ser publicado após avaliação do responsável
+        técnico junto ao CRO-MG, em formato admitido pela norma — nunca como texto de exemplo
+        apresentado como se fosse de um paciente real.
       </div>
 
       <h2>9. Disponibilidade do site</h2>
@@ -287,7 +278,7 @@ export default function TermosPage() {
       </p>
       <p>
         Indisponibilidade do site <strong>não afeta</strong> consultas já confirmadas. Em caso de
-        dúvida sobre um agendamento, ligue para <span className={styles.fill}>[PREENCHER: telefone]</span>.
+        dúvida sobre um agendamento, ligue para (31) 98618-2875.
       </p>
 
       <h2>10. Limitação de responsabilidade</h2>
@@ -337,10 +328,9 @@ export default function TermosPage() {
 
       <h2>13. Contato</h2>
       <p>
-        Dúvidas sobre estes Termos: <span className={styles.fill}>[PREENCHER: e-mail]</span>
+        Dúvidas sobre estes Termos: clinacodonto@gmail.com
         <br />
-        Assuntos de privacidade e dados pessoais:{" "}
-        <span className={styles.fill}>[PREENCHER: e-mail de privacidade]</span>
+        Assuntos de privacidade e dados pessoais: clinacodonto@gmail.com
       </p>
     </LegalLayout>
   );

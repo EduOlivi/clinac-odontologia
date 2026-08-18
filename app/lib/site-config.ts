@@ -11,8 +11,5 @@ export const SITE_URL =
 
 export const SITE_NAME = "Clínac Odontologia";
 
-// PLACEHOLDER: mesmo número de WhatsApp do site original — tem cara de fixo
-// de BH (8 dígitos, sem o 9 do celular), não de número com WhatsApp. O dono
-// do site DEVE confirmar que este é um número real com WhatsApp Business
-// ativo antes do lançamento. Não alteramos o número, pois não temos o real.
-export const WHATSAPP_URL = "https://wa.me/553133004455";
+// Número real confirmado pelo dono do site em 2026-08-14 (+55 31 98618-2875).
+export const WHATSAPP_URL = "https://wa.me/5531986182875";

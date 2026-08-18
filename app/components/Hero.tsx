@@ -20,33 +20,35 @@ export default function Hero() {
               Ver tratamentos
             </a>
           </div>
-          {/* PLACEHOLDER / A CONFIRMAR (product): "12 anos", "4.9/5 em mais de 800
-              avaliações" e "500+ implantes" são números de exemplo, sem fonte. O
-              dono do site deve confirmar/documentar a fonte de cada estatística ou
-              suavizar a redação antes do lançamento — não inventamos a fonte aqui. */}
+          {/* Trocado em 2026-08-14: os números originais ("12 anos", "4.9/5 em
+              800+ avaliações", "500+ implantes") eram de exemplo — o dono do
+              site confirmou que não são reais. Em vez de suavizar pra um
+              número genérico igualmente inventado, viraram diferenciais
+              qualitativos (o mesmo conteúdo já usado como base da seção
+              "Sobre") — nada aqui afirma uma quantidade não verificada. */}
           <div className="hero-stats">
             <div>
-              <div className="stat-num">12 anos</div>
+              <div className="stat-num">Digital</div>
               <div className="stat-label">
-                cuidando de sorrisos
+                escaneamento intraoral,
                 <br />
-                em BH
+                sem moldes de massa
               </div>
             </div>
             <div>
-              <div className="stat-num">4.9 / 5</div>
+              <div className="stat-num">Por escrito</div>
               <div className="stat-label">
-                média em mais de
+                plano de tratamento claro
                 <br />
-                800 avaliações
+                antes de começar
               </div>
             </div>
             <div>
-              <div className="stat-num">500+</div>
+              <div className="stat-num">Explicado</div>
               <div className="stat-label">
-                implantes realizados
+                cada etapa, do diagnóstico
                 <br />
-                com sucesso
+                ao pós-tratamento
               </div>
             </div>
           </div>

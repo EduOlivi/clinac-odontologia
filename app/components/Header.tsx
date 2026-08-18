@@ -54,11 +54,6 @@ export default function Header() {
             </a>
           </li>
           <li>
-            <a href="#depoimentos" onClick={() => setOpen(false)}>
-              Depoimentos
-            </a>
-          </li>
-          <li>
             <a href="#contato" onClick={() => setOpen(false)}>
               Contato
             </a>

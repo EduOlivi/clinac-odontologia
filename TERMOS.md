@@ -41,18 +41,18 @@ consentimento próprios, firmados presencialmente na clínica.
 | Razão social | `[PREENCHER: razão social completa]` |
 | Nome fantasia | Clínac Odontologia |
 | CNPJ | `[PREENCHER: CNPJ]` |
-| Endereço | `[PREENCHER: endereço completo com CEP]` |
-| Registro da pessoa jurídica no CRO-MG | `[PREENCHER: nº de inscrição da clínica]` |
-| Responsável Técnico | `[PREENCHER: nome do cirurgião-dentista responsável técnico]` |
-| CRO do Responsável Técnico | `[PREENCHER: CRO-MG nº]` |
-| E-mail de contato | `[PREENCHER]` |
-| Telefone | `[PREENCHER]` |
+| Endereço | Rua Desembargador Ribeiro da Luz, 462 — Barreiro, Belo Horizonte/MG, 30640-040 |
+| Registro da pessoa jurídica no CRO-MG | EPAO 4909 |
+| Responsável Técnico | Simone Oliveira |
+| CRO do Responsável Técnico | CRO-MG 49483 |
+| E-mail de contato | clinacodonto@gmail.com |
+| Telefone | (31) 98618-2875 |
 
 > **Obrigatório, não decorativo.** A Resolução CFO-196/2019 exige a
 > identificação do cirurgião-dentista e do respectivo número de inscrição no CRO
-> em material de divulgação. O rodapé do site hoje exibe `CRO-MG 00000`, que é
-> um valor de exemplo — precisa ser substituído pelo número real antes da
-> publicação.
+> em material de divulgação. O rodapé do site já exibe o número real
+> (`CRO-MG 49483`, resp. técnica Simone Oliveira, mais o registro da pessoa
+> jurídica `EPAO 4909`).
 
 ---
 
@@ -167,13 +167,17 @@ As fontes tipográficas e bibliotecas de terceiros utilizadas permanecem sujeita
 
 ## 8. Depoimentos e conteúdo de pacientes
 
-`[PREENCHER — PENDÊNCIA REGULATÓRIA, ver observação abaixo]`
+Este site **não publica depoimentos de pacientes**. Uma seção de depoimentos
+fictícios (texto de exemplo, usado apenas como referência de layout durante o
+desenvolvimento) foi removida em 2026-08-14, após o dono do site confirmar que
+o conteúdo não era real.
 
-> **Atenção.** A Resolução CFO-196/2019 **veda a divulgação de depoimentos de
-> pacientes** em publicidade odontológica. A seção "Depoimentos" atualmente
-> publicada no site precisa ser avaliada pelo responsável técnico junto ao
-> CRO-MG antes da publicação definitiva. Esta cláusula só faz sentido se a
-> seção for mantida em formato admitido pela norma.
+> **Atenção, se esta seção for reintroduzida no futuro.** A Resolução
+> CFO-196/2019 **veda a divulgação de depoimentos de pacientes** em
+> publicidade odontológica. Qualquer depoimento real só pode ser publicado
+> após avaliação do responsável técnico junto ao CRO-MG, em formato admitido
+> pela norma — nunca como texto de exemplo apresentado como se fosse de um
+> paciente real.
 
 ---
 
@@ -188,7 +192,7 @@ pode alterar, suspender ou descontinuar o site ou qualquer de suas seções a
 qualquer tempo, sem aviso prévio.
 
 Indisponibilidade do site **não afeta** consultas já confirmadas. Em caso de
-dúvida sobre um agendamento, ligue para `[PREENCHER: telefone]`.
+dúvida sobre um agendamento, ligue para (31) 98618-2875.
 
 ---
 
@@ -234,5 +238,5 @@ Confirmar redação com advogado.]`
 
 ## 13. Contato
 
-Dúvidas sobre estes Termos: `[PREENCHER: e-mail]`
-Assuntos de privacidade e dados pessoais: `[PREENCHER: e-mail de privacidade]`
+Dúvidas sobre estes Termos: clinacodonto@gmail.com
+Assuntos de privacidade e dados pessoais: clinacodonto@gmail.com

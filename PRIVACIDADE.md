@@ -33,15 +33,15 @@ coletados por meio deste site, nos termos do art. 5º, VI, da Lei nº 13.709/201
 |---|---|
 | Razão social | `[PREENCHER: razão social completa da clínica]` |
 | CNPJ | `[PREENCHER: CNPJ]` |
-| Endereço | `[PREENCHER: endereço completo com CEP]` |
-| Registro da pessoa jurídica no CRO-MG | `[PREENCHER: nº de inscrição da clínica no CRO-MG]` |
-| Responsável Técnico | `[PREENCHER: nome do cirurgião-dentista responsável técnico]` |
-| CRO do Responsável Técnico | `[PREENCHER: CRO-MG nº]` |
-| Site | `[PREENCHER: URL pública do site]` |
+| Endereço | Rua Desembargador Ribeiro da Luz, 462 — Barreiro, Belo Horizonte/MG, 30640-040 |
+| Registro da pessoa jurídica no CRO-MG | EPAO 4909 |
+| Responsável Técnico | Simone Oliveira |
+| CRO do Responsável Técnico | CRO-MG 49483 |
+| Site | `[PREENCHER: URL pública do site — depende do domínio final, ver docs/DEPLOY.md]` |
 
 **Canal de contato para assuntos de privacidade e dados pessoais:**
-`[PREENCHER: e-mail dedicado, ex. privacidade@clinac.com.br]`
-`[PREENCHER: telefone, se desejar oferecer atendimento por telefone]`
+clinacodonto@gmail.com
+(31) 98618-2875
 
 ---
 
@@ -302,9 +302,9 @@ fornecedores, que hoje operam sob contratos de adesão baseados em cláusulas
 europeias, e se há prazo de adequação já vencido aplicável ao caso.]`
 
 Se você não concordar com essa transferência, **não utilize o formulário**.
-Nesse caso, entre em contato conosco pelo telefone `[PREENCHER: telefone da
-clínica]`, pelo WhatsApp, por e-mail ou presencialmente — esses canais não
-dependem do envio do formulário deste site.
+Nesse caso, entre em contato conosco pelo telefone (31) 98618-2875, pelo
+WhatsApp, por e-mail (clinacodonto@gmail.com) ou presencialmente — esses
+canais não dependem do envio do formulário deste site.
 
 ---
 
@@ -347,9 +347,9 @@ Você pode, a qualquer momento e gratuitamente, solicitar:
 8. **Informação** sobre a possibilidade de não consentir e as consequências disso;
 9. **Revogação do consentimento**, a qualquer momento e de forma gratuita.
 
-**Como exercer:** envie o pedido para `[PREENCHER: e-mail de privacidade]`,
-identificando-se. Responderemos em até **15 (quinze) dias** contados do
-recebimento, conforme o art. 19, II, da LGPD.
+**Como exercer:** envie o pedido para clinacodonto@gmail.com, identificando-se.
+Responderemos em até **15 (quinze) dias** contados do recebimento, conforme o
+art. 19, II, da LGPD.
 
 **Como confirmamos que é você.** O formulário só coleta nome e telefone, então
 o telefone é a chave de busca. Antes de exportar ou apagar qualquer coisa,
@@ -439,7 +439,7 @@ termos da **Resolução CD/ANPD nº 2/2022**, está dispensada da indicação fo
 de Encarregado. Mantemos, contudo, o canal de comunicação exigido pela norma,
 para titulares e para a ANPD:
 
-`[PREENCHER: e-mail e responsável pelo canal de privacidade]`
+clinacodonto@gmail.com — `[PREENCHER: nome/cargo de quem responde por esse canal na clínica]`
 
 `[VERIFICAR COM ADVOGADO: o regime diferenciado da Resolução nº 2/2022 não se
 aplica a quem realiza tratamento de alto risco. Este site trata dado sensível
@@ -464,18 +464,21 @@ ou a ANPD perguntarem (art. 8º, § 2º, da LGPD).
 
 ---
 
-## 11. Publicidade odontológica (pendência do responsável técnico)
+## 11. Publicidade odontológica
 
-`[PENDÊNCIA REGULATÓRIA — NÃO É QUESTÃO DE PROTEÇÃO DE DADOS, MAS BLOQUEIA A
-PUBLICAÇÃO DO SITE.]`
+A **Resolução CFO-196/2019** restringe a publicidade odontológica e **veda a
+divulgação de depoimentos de pacientes**. Em 2026-08-14 o dono do site
+confirmou que a seção "Depoimentos" era fictícia (texto de exemplo, nunca
+foram pacientes reais) e as estatísticas do topo da página ("12 anos",
+"4.9/5 em mais de 800 avaliações", "500+ implantes") não tinham fonte — a
+seção de depoimentos foi **removida** e as estatísticas foram trocadas por
+diferenciais qualitativos, sem número não verificado.
 
-> A **Resolução CFO-196/2019** restringe a publicidade odontológica e **veda a
-> divulgação de depoimentos de pacientes**. A seção "Depoimentos" e as
-> estatísticas do topo da página ("12 anos", "4.9/5 em mais de 800 avaliações",
-> "500+ implantes"), que não têm fonte documentada, precisam do aval do
-> **responsável técnico junto ao CRO-MG** antes da publicação definitiva. Isso
-> não foi resolvido por nenhuma revisão técnica — **não é um ajuste de código**,
-> é uma decisão da própria clínica.
+> **Se um depoimento real de paciente for adicionado no futuro**, ele precisa
+> do aval do **responsável técnico junto ao CRO-MG** antes da publicação — a
+> Resolução CFO-196/2019 restringe esse tipo de conteúdo mesmo quando genuíno
+> e autorizado pelo paciente. Isso não é um ajuste de código, é uma decisão da
+> própria clínica.
 
 ---
 
