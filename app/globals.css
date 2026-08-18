@@ -184,7 +184,7 @@ h1 em{
 }
 .hero-sub{
   margin-top:22px;
-  font-size:17.5px;
+  font-size:17px;
   line-height:1.65;
   color:#3A4F45;
   max-width:460px;
@@ -201,8 +201,21 @@ h1 em{
   max-width:480px;
 }
 .stat-num{
-  font-family:var(--display);
-  font-size:26px;color:var(--pine);
+  font-family:var(--mono);
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:var(--pine);
+  display:flex;align-items:center;gap:8px;
+}
+/* Bolinha reaproveitando o mesmo motivo/cor da ilustração do herói
+   (.art-dot, ver Hero.tsx) — nenhum asset novo, só o mesmo verde-esmeralda
+   como marcador antes de cada diferencial. */
+.stat-num::before{
+  content:'';
+  width:6px;height:6px;border-radius:50%;
+  background:var(--emerald);
+  flex-shrink:0;
 }
 .stat-label{
   font-size:12.5px;color:#5C7A6C;margin-top:4px;line-height:1.4;
@@ -245,7 +258,7 @@ h1 em{
 }
 .trust-item{
   display:flex;align-items:center;gap:10px;
-  font-size:13.5px;color:var(--pine-dark);font-weight:500;
+  font-size:13px;color:var(--pine-dark);font-weight:500;
 }
 .trust-item svg{width:18px;height:18px;color:var(--emerald);flex-shrink:0;}
 
@@ -265,7 +278,7 @@ section{padding:104px 0;}
 }
 .section-head p{
   margin-top:16px;
-  font-size:16px;color:#4B6156;line-height:1.6;
+  font-size:17px;color:#4B6156;line-height:1.6;
 }
 
 /* ---------- services ---------- */
@@ -357,15 +370,37 @@ section{padding:104px 0;}
   width:22px;height:22px;flex-shrink:0;color:var(--emerald);margin-top:2px;
 }
 .implant-item h4{font-size:15.5px;font-weight:600;color:var(--pine-dark);}
-.implant-item p{font-size:13.5px;color:#4B6156;margin-top:3px;line-height:1.55;}
+.implant-item p{font-size:14.5px;color:#4B6156;margin-top:3px;line-height:1.55;}
 
-/* Estilos do Carrossel de Fotos */
+/* Estilos do Carrossel de Fotos
+
+   implante-01.jpg é 900×1125px = proporção 4:5 EXATA. O container já foi
+   feito 4:5 de propósito, mas isso combinado com object-fit:cover produz
+   ZERO recorte sempre que max-height não força um formato diferente
+   (que é o caso em praticamente toda a faixa mobile) — a foto crua inteira
+   aparece, bigode encostando no topo do quadro e barba/queixo encostando
+   embaixo, sem nenhuma margem. No desktop, o max-height:560px por acaso
+   forçava um formato mais largo que recortava um pouco de cima/baixo — só
+   que por acidente (efeito colateral do cap, não uma escolha), e nem
+   sempre: a cada breakpoint o resultado era outro, dependendo só de qual
+   lado (aspect-ratio vs max-height) vencia o cabo de guerra.
+
+   Fizemos a proporção do CONTAINER deliberadamente mais "quadrada" que a
+   da foto (10:9 em vez de 4:5) para SEMPRE recortar um pouco de cima
+   (bigode) e de baixo (barba/queixo) em qualquer largura de tela, de
+   forma consistente — e não como resultado colateral do max-height.
+   Faixa de recorte calculada a partir da foto real (análise de cor por
+   linha): bigode ocupa até ~y=225/1125, dentes ficam entre y=340-610,
+   lábio inferior + queixo de y=610 em diante. A janela 10:9 mantida por
+   object-position:center 44% (ver .carousel-slide img abaixo) mostra a
+   faixa y≈140-950 — sobra de bigode e queixo cortada, boca inteira com
+   folga generosa preservada. */
 .carousel-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 4/5;
+  aspect-ratio: 10/9;
   height: auto;
-  max-height: 560px;
+  max-height: 520px;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 12px 32px rgba(14, 59, 44, 0.08);
@@ -402,7 +437,11 @@ section{padding:104px 0;}
   width: 100%;
   height: 100%;
   object-fit: cover; /* Mude para 'contain' se quiser ver a foto 100% inteira sem cortes nas bordas */
-  object-position: center;
+  /* 44% (não 50%) porque a faixa dos dentes na foto original não fica no
+     centro geométrico do arquivo — fica um pouco acima dele (bigode ocupa
+     menos altura que lábio inferior+queixo). Ver nota em .carousel-container
+     acima para a análise que embasa este número. */
+  object-position: center 44%;
   filter: saturate(.9) contrast(1.03);
 }
 
@@ -461,7 +500,7 @@ section{padding:104px 0;}
   pointer-events:none;
 }
 .about .wrap{
-  display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:center;
+  display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:start;
 }
 .about .eyebrow{color:var(--sage);}
 .about .eyebrow::before{background:var(--sage);}
@@ -479,7 +518,7 @@ section{padding:104px 0;}
   padding-top:3px;flex-shrink:0;width:28px;
 }
 .diff-item h4{font-size:16.5px;font-weight:600;}
-.diff-item p{font-size:14px;color:#B9CFC1;margin-top:5px;line-height:1.55;}
+.diff-item p{font-size:14.5px;color:#B9CFC1;margin-top:5px;line-height:1.55;}
 
 .about-visual{
   position:relative;
@@ -498,44 +537,6 @@ section{padding:104px 0;}
 .about-visual svg.tooth-bg{position:absolute;pointer-events:none;}
 .about-visual svg.tooth-bg-1{width:62%;top:-10%;left:-16%;opacity:.13;transform:rotate(-20deg);}
 .about-visual svg.tooth-bg-2{width:52%;bottom:-12%;right:-14%;opacity:.11;transform:rotate(26deg);}
-
-/* ---------- testimonials ---------- */
-.testimonials{background:var(--mist);}
-.test-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:26px;
-}
-.test-card{
-  background:var(--white);
-  border-radius:16px;
-  padding:32px 28px;
-  border:1px solid var(--line);
-  transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
-}
-.test-card:hover{
-  transform:translateY(-2px);
-  border-color:var(--emerald);
-  box-shadow:0 8px 20px rgba(14,59,44,.08);
-}
-.test-quote{
-  font-family:var(--display);
-  font-style:italic;
-  font-size:17px;
-  line-height:1.55;
-  color:var(--pine-dark);
-}
-.test-foot{
-  margin-top:22px;display:flex;align-items:center;gap:12px;
-}
-.test-avatar{
-  width:38px;height:38px;border-radius:50%;
-  background:var(--pine);
-  color:var(--white);
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:13px;
-}
-.test-name{font-size:13.5px;font-weight:600;color:var(--pine-dark);}
-.test-role{font-size:12px;color:#6E8B7C;}
-.stars{color:var(--emerald);font-size:13px;letter-spacing:2px;margin-bottom:14px;}
 
 /* ---------- booking / cta ---------- */
 .booking{
@@ -563,7 +564,7 @@ section{padding:104px 0;}
   font-family:var(--display);font-weight:450;
   font-size:clamp(28px,3vw,36px);line-height:1.2;margin-top:14px;
 }
-.booking-left p{margin-top:16px;color:#C6D9CD;font-size:15px;line-height:1.6;max-width:380px;}
+.booking-left p{margin-top:16px;color:#C6D9CD;font-size:17px;line-height:1.6;max-width:380px;}
 .booking-left .btn{margin-top:30px;}
 
 form{display:flex;flex-direction:column;gap:14px;}
@@ -577,10 +578,71 @@ input,select{
   font-size:14px;font-family:inherit;
   width:100%;
 }
+input:focus, select:focus{
+  background:rgba(255,255,255,.13);
+  border-color:rgba(255,255,255,.35);
+}
 input::placeholder{color:#9BB6A8;}
 select option{color:var(--ink);}
-.consent{ display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5; color:#C6D9CD; cursor:pointer; margin-top:6px; padding:4px 0; }
-.consent input[type="checkbox"]{ appearance:auto; -webkit-appearance:checkbox; width:18px; height:18px; min-width:18px; flex:0 0 auto; padding:0; margin:2px 0 0; border:none; border-radius:3px; background:none; accent-color:var(--emerald); cursor:pointer; }
+/* Agrupamento visual + semântico dos dois checkboxes de consentimento
+   (ver <fieldset> em BookingForm.tsx). Sem isso o gap:14px do form trata
+   este bloco igual a qualquer outro par de campos — a barra + respiro extra
+   marcam que aqui começa a seção legal do formulário, não mais um campo
+   de dados de contato. */
+fieldset.consent-group{
+  border:none;
+  border-top:1px solid rgba(255,255,255,.10);
+  padding:18px 0 0;
+  margin:0;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+fieldset.consent-group legend{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--sage);
+  padding:0;
+  margin-bottom:4px;
+}
+fieldset.consent-group .consent{ margin-top:0; }
+.consent{ display:flex; gap:10px; align-items:flex-start; font-size:13px; line-height:1.5; color:#C6D9CD; cursor:pointer; margin-top:6px; padding:4px 0; }
+/* Checkbox com skin próprio, mas semântica nativa preservada (appearance:none
+   troca só a APARÊNCIA — continua um <input type="checkbox"> de verdade,
+   focável por teclado, com o :checked/:focus-visible do navegador
+   funcionando normalmente). Uma div fake exigiria reimplementar tudo isso
+   à mão (role, tabindex, tecla espaço, aria-checked) só para chegar no
+   mesmo lugar com mais risco de acessibilidade — não vale a troca aqui. */
+.consent input[type="checkbox"]{
+  appearance:none;
+  -webkit-appearance:none;
+  width:20px;height:20px;min-width:20px;
+  flex:0 0 auto;
+  margin:1px 0 0;
+  border:1.5px solid rgba(255,255,255,.35);
+  border-radius:5px;
+  background:rgba(255,255,255,.08);
+  cursor:pointer;
+  position:relative;
+  transition:background .15s ease, border-color .15s ease;
+}
+.consent input[type="checkbox"]:hover{ border-color:rgba(255,255,255,.6); }
+.consent input[type="checkbox"]:checked{
+  background:var(--emerald);
+  border-color:var(--emerald);
+}
+.consent input[type="checkbox"]:checked::after{
+  content:'';
+  position:absolute;
+  left:6px;top:2px;
+  width:5px;height:10px;
+  border:solid var(--white);
+  border-width:0 2px 2px 0;
+  transform:rotate(40deg);
+}
 .consent a{color:var(--white); text-decoration:underline;}
 .consent strong{color:var(--white); font-weight:600;}
 .consent-opt{color:#9BB6A8;}
@@ -599,7 +661,7 @@ form .btn-primary{
   margin-top:6px;justify-content:center;
 }
 form .btn-primary:hover{background:var(--sage);color:var(--pine-dark);}
-.form-note{font-size:11.5px;color:#9BB6A8;margin-top:2px;}
+.form-note{font-size:12px;color:#9BB6A8;margin-top:2px;}
 
 /* verificação anti-robô (Cloudflare Turnstile — app/components/TurnstileWidget.tsx).
    O widget é um <iframe> de tamanho fixo servido pela Cloudflare: não dá para
@@ -607,7 +669,14 @@ form .btn-primary:hover{background:var(--sage);color:var(--pine-dark);}
    evita o pulo de layout entre o container vazio e o iframe já carregado.
    Refinamento visual (se o bloco destoar do resto do formulário) é território
    de `design`, não uma decisão de segurança. */
-.turnstile-widget{min-height:65px;margin-top:2px;}
+.turnstile-widget{
+  min-height:65px;
+  margin-top:10px;
+  padding:10px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:10px;
+}
 
 /* mensagem de retorno do envio do formulário (sucesso / erro) */
 .form-feedback{
@@ -634,6 +703,15 @@ footer{
   background:var(--pine-dark);
   color:#B9CFC1;
   padding:64px 0 28px;
+  position:relative;
+}
+/* Mesmo tratamento de transição já usado em .about::before, entre a seção
+   .implants (clara) e .about (escura) — aplicado aqui para a transição
+   .booking (branca) → footer (pinho escuro), que antes era um corte seco. */
+footer::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:48px;
+  background:linear-gradient(180deg, var(--white), var(--pine-dark));
+  pointer-events:none;
 }
 .foot-grid{
   display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;
@@ -644,7 +722,7 @@ footer{
   display:flex;align-items:center;gap:8px;
 }
 .foot-logo svg{width:22px;height:22px;}
-.foot-desc{margin-top:14px;font-size:13.5px;line-height:1.6;max-width:260px;}
+.foot-desc{margin-top:14px;font-size:13px;line-height:1.6;max-width:260px;}
 .foot-col h5{
   font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--sage);margin-bottom:16px;
@@ -655,7 +733,7 @@ footer{
 .foot-col a:hover{color:var(--white);}
 .foot-bottom{
   padding-top:24px;display:flex;justify-content:space-between;
-  font-size:12.5px;color:#7E9A8C;flex-wrap:wrap;gap:10px;
+  font-size:12px;color:#7E9A8C;flex-wrap:wrap;gap:10px;
 }
 
 /* ---------- floating whatsapp ---------- */
@@ -731,10 +809,17 @@ footer{
   .hero-art{max-width:340px;margin:0 auto;order:-1;}
   .services-grid{grid-template-columns:repeat(2,1fr);}
   .implants .wrap{grid-template-columns:1fr;}
-  .carousel-container{max-height:440px;order:-1;}
+  /* Entre 561-920px o grid vira 1 coluna e o container herdaria a largura
+     cheia do .wrap — bem mais larga que a coluna de ~1.15fr do desktop.
+     Travar a largura (em vez de brigar com max-height contra o
+     aspect-ratio, que é justamente o padrão que causava o recorte
+     inconsistente que motivou esta revisão) mantém a MESMA proporção
+     10/9 seguramente enquadrada, e também alinha com o tratamento já
+     usado em .about-visual (mesmo breakpoint): virar um cartão retrato
+     centralizado em vez de esticar em faixa. */
+  .carousel-container{max-width:420px;margin:0 auto;order:-1;}
   .about .wrap{grid-template-columns:1fr;}
   .about-visual{max-width:320px;margin:0 auto;}
-  .test-grid{grid-template-columns:1fr;}
   .booking-box{grid-template-columns:1fr;padding:40px 28px;}
   .foot-grid{grid-template-columns:1fr 1fr;}
 }

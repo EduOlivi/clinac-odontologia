@@ -12,3 +12,13 @@ Este arquivo é só um ponteiro para um agente de IA trabalhando neste repo. A e
 - **Não renomeie `middleware.ts` para `proxy.ts`** (nem rode `@next/codemod middleware-to-proxy`) sem antes conferir se `@opennextjs/cloudflare` passou a suportar middleware em runtime Node.js — hoje não suporta, e o build do Worker quebra. Ver comentário no topo do próprio arquivo e `docs/DEPLOY.md`.
 - Depois de qualquer mudança em `app/lib/leads.ts`, `app/api/leads/route.ts`, `app/components/BookingForm.tsx` ou na migração RLS (`supabase/migrations/`), rode `npm run typecheck && npm run lint && npm run test && npm run check` antes de considerar a tarefa concluída — são os quatro comandos do job `verify` do CI. Se a mudança tocar RLS/policies, rode também `supabase/tests/rls_leads.test.sql` manualmente (não está em CI — exige Postgres real, ver instruções no topo do arquivo).
 - **Nenhum agente de IA consegue completar os passos que exigem login em conta real** (criar o projeto Supabase, verificar domínio no Resend, criar o widget Turnstile, cadastrar secrets na Cloudflare) — ver a checklist "Pendências antes do lançamento" no `README.md`. Não simule/invente esses passos como concluídos.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

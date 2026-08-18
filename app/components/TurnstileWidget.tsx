@@ -154,7 +154,12 @@ export default function TurnstileWidget({ siteKey, onToken, resetSignal }: Props
         widgetIdRef.current =
           window.turnstile.render(containerRef.current, {
             sitekey: siteKey,
-            theme: "auto",
+            // Fixo em "dark" (não "auto"): o widget sempre fica dentro do
+            // cartão pinho escuro (.booking-box). "auto" segue o tema
+            // claro/escuro do SISTEMA OPERACIONAL do visitante — quem estiver
+            // no modo claro do SO recebia a pele clara do Cloudflare,
+            // encravada dentro do cartão escuro (design, auditoria visual).
+            theme: "dark",
             language: "pt-br",
             callback: (token: string) => onTokenRef.current(token),
             // Token vencido (5 min) — o widget se renova sozinho, mas até lá

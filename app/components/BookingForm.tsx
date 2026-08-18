@@ -246,33 +246,43 @@ export default function BookingForm() {
 
           SE ESTE TEXTO MUDAR DE SUBSTÂNCIA: bumpe CURRENT_POLICY_VERSION em
           app/lib/leads.ts e o `value` do input escondido logo abaixo. */}
-      <label className="consent">
-        <input type="checkbox" name="consentimento_lgpd" value="sim" required />
-        <span>
-          <span className="consent-tag required">Obrigatório</span>Autorizo a Clínac a tratar meu
-          nome, telefone e o tratamento de interesse informado — que é <strong>dado de saúde</strong>{" "}
-          — para retornar meu contato e agendar minha avaliação. Autorizo também que esses dados
-          sejam processados pelos serviços de tecnologia usados por este site (Supabase, Cloudflare
-          e Resend), <strong>parte deles com infraestrutura fora do Brasil</strong> — transferência
-          internacional detalhada na seção 4 da{" "}
-          <Link href="/privacidade" target="_blank" rel="noopener">
-            Política de Privacidade
-          </Link>
-          , que li e aceito, junto com os{" "}
-          <Link href="/termos" target="_blank" rel="noopener">
-            Termos de Uso
-          </Link>
-          .
-        </span>
-      </label>
+      {/* <fieldset> em vez de dois <label> soltos: agrupa visualmente (barra +
+          respiro, ver .consent-group em globals.css) E semanticamente — um
+          landmark explícito de "isto é a seção de consentimento legal" para
+          quem navega o formulário com leitor de tela. Um <fieldset> não
+          participa da árvore de FormData além dos <input> que já estavam
+          aqui dentro: nenhum campo muda de nome/valor, o POST /api/leads
+          continua recebendo exatamente o mesmo payload. */}
+      <fieldset className="consent-group">
+        <legend>Consentimento</legend>
+        <label className="consent">
+          <input type="checkbox" name="consentimento_lgpd" value="sim" required />
+          <span>
+            <span className="consent-tag required">Obrigatório</span>Autorizo a Clínac a tratar meu
+            nome, telefone e o tratamento de interesse informado — que é <strong>dado de saúde</strong>{" "}
+            — para retornar meu contato e agendar minha avaliação. Autorizo também que esses dados
+            sejam processados pelos serviços de tecnologia usados por este site (Supabase, Cloudflare
+            e Resend), <strong>parte deles com infraestrutura fora do Brasil</strong> — transferência
+            internacional detalhada na seção 4 da{" "}
+            <Link href="/privacidade" target="_blank" rel="noopener">
+              Política de Privacidade
+            </Link>
+            , que li e aceito, junto com os{" "}
+            <Link href="/termos" target="_blank" rel="noopener">
+              Termos de Uso
+            </Link>
+            .
+          </span>
+        </label>
 
-      <label className="consent consent-opt">
-        <input type="checkbox" name="consentimento_marketing" value="sim" />
-        <span>
-          <span className="consent-tag optional">Opcional</span>Quero receber novidades, campanhas e
-          promoções da Clínac. Posso cancelar quando quiser, sem prejuízo ao meu atendimento.
-        </span>
-      </label>
+        <label className="consent consent-opt">
+          <input type="checkbox" name="consentimento_marketing" value="sim" />
+          <span>
+            <span className="consent-tag optional">Opcional</span>Quero receber novidades, campanhas e
+            promoções da Clínac. Posso cancelar quando quiser, sem prejuízo ao meu atendimento.
+          </span>
+        </label>
+      </fieldset>
 
       {/* Espelho visível da constante do servidor (CURRENT_POLICY_VERSION em
           app/lib/leads.ts). O servidor IGNORA o que chega aqui e grava a
