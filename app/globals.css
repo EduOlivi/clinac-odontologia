@@ -374,33 +374,21 @@ section{padding:104px 0;}
 
 /* Estilos do Carrossel de Fotos
 
-   implante-01.jpg é 900×1125px = proporção 4:5 EXATA. O container já foi
-   feito 4:5 de propósito, mas isso combinado com object-fit:cover produz
-   ZERO recorte sempre que max-height não força um formato diferente
-   (que é o caso em praticamente toda a faixa mobile) — a foto crua inteira
-   aparece, bigode encostando no topo do quadro e barba/queixo encostando
-   embaixo, sem nenhuma margem. No desktop, o max-height:560px por acaso
-   forçava um formato mais largo que recortava um pouco de cima/baixo — só
-   que por acidente (efeito colateral do cap, não uma escolha), e nem
-   sempre: a cada breakpoint o resultado era outro, dependendo só de qual
-   lado (aspect-ratio vs max-height) vencia o cabo de guerra.
-
-   Fizemos a proporção do CONTAINER deliberadamente mais "quadrada" que a
-   da foto (10:9 em vez de 4:5) para SEMPRE recortar um pouco de cima
-   (bigode) e de baixo (barba/queixo) em qualquer largura de tela, de
-   forma consistente — e não como resultado colateral do max-height.
-   Faixa de recorte calculada a partir da foto real (análise de cor por
-   linha): bigode ocupa até ~y=225/1125, dentes ficam entre y=340-610,
-   lábio inferior + queixo de y=610 em diante. A janela 10:9 mantida por
-   object-position:center 44% (ver .carousel-slide img abaixo) mostra a
-   faixa y≈140-950 — sobra de bigode e queixo cortada, boca inteira com
-   folga generosa preservada. */
+   implante-antes-depois.jpg é 653×1066px (dois painéis empilhados, ver
+   comentário em ImplantsSection.tsx). Uma tentativa anterior deixou o
+   container mais "quadrado" que a foto de propósito, pra sempre recortar
+   um pouco — mas o resultado, visto de verdade pelo dono do site, ficou
+   apertado demais. Pedido explícito: mostrar a foto inteira, sem cortar.
+   Container bate com a proporção real da foto (653/1066) e object-fit é
+   `contain` — combinação que garante ZERO recorte sempre, mesmo que um
+   max-height futuro desalinhe as proporções (nesse caso `contain` sobra
+   como faixa vazia, nunca corta a imagem, ao contrário de `cover`). */
 .carousel-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 10/9;
+  aspect-ratio: 653/1066;
   height: auto;
-  max-height: 520px;
+  max-height: 640px;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 12px 32px rgba(14, 59, 44, 0.08);
@@ -436,12 +424,8 @@ section{padding:104px 0;}
 .carousel-slide img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Mude para 'contain' se quiser ver a foto 100% inteira sem cortes nas bordas */
-  /* 44% (não 50%) porque a faixa dos dentes na foto original não fica no
-     centro geométrico do arquivo — fica um pouco acima dele (bigode ocupa
-     menos altura que lábio inferior+queixo). Ver nota em .carousel-container
-     acima para a análise que embasa este número. */
-  object-position: center 44%;
+  object-fit: contain; /* foto inteira, sem cortar — ver nota em .carousel-container acima */
+  object-position: center;
   filter: saturate(.9) contrast(1.03);
 }
 

@@ -49,15 +49,20 @@ export default function ImplantsSection() {
         </div>
 
         {/*
-          Fotos originais (foto 1..4.jpeg) são colagens verticais com 2-3 painéis
-          separados por uma marca d'água — não utilizáveis direto no carrossel.
-          implante-01.jpg é um recorte (painel único, proporção 4:5) gerado a partir
-          de foto 2.jpeg (painel inferior). implante-02.jpg (foto 1.jpeg, painel
-          superior) foi removido daqui: é um caso de tratamento ortodôntico (aparelho),
-          não de implante — não representa o que esta seção anuncia, então não deve
-          aparecer com legenda de "caso de implante" mesmo com uso de imagem autorizado
-          pela clínica. foto 3/4.jpeg foram descartadas: todos os painéis são macro
-          clínico extremo, sem recorte aproveitável para marketing.
+          implante-antes-depois.jpg: pedido explícito do dono do site em 2026-08-18
+          (imagem autorizada e fornecida pela própria clínica) — mostra os dois
+          painéis (antes: parafusos de implante visíveis; depois: sorriso
+          reabilitado), gerados a partir do arquivo original foto 2.jpeg (histórico
+          do repo, commit 68de4d1) recortando só a marca d'água "Clinac Odontologia"
+          que ficava sobreposta entre os dois painéis — nenhum conteúdo de dente/gengiva
+          foi alterado ou reconstruído, só removida a faixa onde a marca d'água estava.
+
+          ATENÇÃO — imagem de antes/depois: a Resolução CFO-196/2019 tem leituras que
+          restringem esse tipo de comparação em publicidade odontológica, além da
+          restrição já conhecida sobre depoimentos de paciente (ver PRIVACIDADE.md §11).
+          Decisão de publicar tomada explicitamente pelo dono do site com autorização
+          da clínica — mesma régua já aplicada ao depoimento removido anteriormente:
+          não é um ajuste de código, é decisão da própria clínica, registrada aqui.
 
           <img> simples (não next/image): a foto é servida estaticamente de
           public/imagens e o deploy alvo é Cloudflare Workers, cuja otimização
@@ -67,8 +72,13 @@ export default function ImplantsSection() {
         */}
         <div className="reveal">
           <Carousel
-            slides={[{ src: "/imagens/implante-01.jpg", alt: "Sorriso reabilitado com implante, sem metal aparente" }]}
-            caption="Caso real de reabilitação com implante"
+            slides={[
+              {
+                src: "/imagens/implante-antes-depois.jpg",
+                alt: "Antes e depois de reabilitação com implante: acima, dentes ausentes com parafusos de implante visíveis; abaixo, sorriso reabilitado",
+              },
+            ]}
+            caption="Antes e depois: caso real de reabilitação com implante"
           />
         </div>
       </div>
