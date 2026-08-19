@@ -1,13 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useRef, useState, type FormEvent } from "react";
+import { useCallback, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { trackEvent } from "../lib/analytics";
 // Única fonte de verdade da lista de tratamentos — compartilhada com a
 // validação server-side em /api/leads (ver app/lib/leads.ts). Duas listas
 // separadas (uma aqui, uma no servidor) já foram um achado de segurança:
 // bastava desalinhar pra abrir brecha de validação.
-import { TREATMENT_OPTIONS, TURNSTILE_TOKEN_FIELD } from "../lib/leads";
+import {
+  MELHOR_HORARIO_OPTIONS,
+  NOME_INVALID_CHARS,
+  TELEFONE_INVALID_CHARS,
+  TREATMENT_OPTIONS,
+  TURNSTILE_TOKEN_FIELD,
+} from "../lib/leads";
 import TurnstileWidget, { TEST_SITE_KEY_ALWAYS_PASSES } from "./TurnstileWidget";
 
 type FeedbackState = { type: "success" | "error"; message: string } | null;
@@ -57,7 +63,7 @@ const SITE_KEY =
      Body: {
        nome: string,
        telefone: string,
-       melhor_horario: string,           // pode vir "" — campo opcional
+       melhor_horario: string,           // "" ou um dos valores de MELHOR_HORARIO_OPTIONS (campo opcional)
        tratamento: string,                // um dos valores de TREATMENT_OPTIONS acima
        consentimento_lgpd: boolean,       // deve ser true (checkbox obrigatório, dado de saúde — LGPD art. 11)
        consentimento_marketing: boolean,  // opcional
@@ -87,6 +93,19 @@ export default function BookingForm() {
 
   const handleTurnstileToken = useCallback((token: string | null) => {
     setTurnstileToken(token);
+  }, []);
+
+  // Filtra ENQUANTO digita (não só no submit) — o caractere inválido nunca
+  // aparece no campo, em vez do usuário digitar e só descobrir no erro do
+  // envio. Usa NOME_INVALID_CHARS/TELEFONE_INVALID_CHARS de app/lib/leads.ts
+  // (mesma classe de caractere do NOME_PATTERN/TELEFONE_PATTERN que o
+  // servidor usa pra validar de verdade) — isto aqui é só UX, não é a
+  // validação que decide.
+  const handleNomeInput = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    e.target.value = e.target.value.replace(NOME_INVALID_CHARS, "");
+  }, []);
+  const handleTelefoneInput = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    e.target.value = e.target.value.replace(TELEFONE_INVALID_CHARS, "");
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -212,10 +231,39 @@ export default function BookingForm() {
 
   return (
     <form id="booking-form" ref={formRef} onSubmit={handleSubmit}>
-      <input type="text" name="nome" placeholder="Nome completo" required />
+      <input
+        type="text"
+        name="nome"
+        placeholder="Nome completo"
+        required
+        onChange={handleNomeInput}
+        // Atributo HTML `pattern`: string JS comum, não regex literal — todo
+        // backslash precisa vir duplicado (\\s) pra sobreviver ao parser do
+        // JS e chegar no atributo como "\s" de verdade. Evitamos \p{L} aqui
+        // de propósito (suporte inconsistente no atributo `pattern` entre
+        // navegadores) — faixa explícita de acentuação latina em vez disso.
+        // O filtro de verdade é o onChange acima + a validação do servidor
+        // (NOME_PATTERN em app/lib/leads.ts, que aí sim usa \p{L} livremente
+        // porque é regex literal do JS, não atributo HTML).
+        pattern="^[A-Za-zÀ-ÖØ-öø-ÿ\\s'-]+$"
+        title="Apenas letras, espaço, hífen e apóstrofo — sem número ou símbolo."
+      />
       <div className="form-row">
-        <input type="tel" name="telefone" placeholder="Telefone / WhatsApp" required />
-        <input type="text" name="melhor_horario" placeholder="Melhor horário" />
+        <input
+          type="tel"
+          name="telefone"
+          placeholder="Telefone / WhatsApp"
+          required
+          onChange={handleTelefoneInput}
+          pattern="^[0-9()\\-\\s+]+$" // idem nota acima: backslash duplicado por ser string JS, não regex literal
+          title="Apenas números e formatação de telefone (espaço, parênteses, hífen) — sem letra ou símbolo."
+        />
+        <select name="melhor_horario" defaultValue="">
+          <option value="">Melhor horário (opcional)</option>
+          {MELHOR_HORARIO_OPTIONS.map((opt) => (
+            <option key={opt}>{opt}</option>
+          ))}
+        </select>
       </div>
       <select name="tratamento" required defaultValue="">
         <option value="" disabled>

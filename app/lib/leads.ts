@@ -112,6 +112,42 @@ export const FIELD_LIMITS = {
 } as const;
 
 /**
+ * Conjunto de caracteres aceitos em cada campo — fonte única, tanto pro
+ * `test()` de validação (âncorado com ^...$) quanto pro filtro "ao digitar"
+ * de BookingForm.tsx (mesma classe, sem âncora, negada com [^...] pra virar
+ * "troque por vazio"). Escrever a classe só uma vez evita o mesmo risco já
+ * encontrado numa revisão de segurança anterior: duas cópias (cliente e
+ * servidor) que desalinham e abrem brecha.
+ *
+ * Nome: letra (com acento, qualquer alfabeto via \p{L}), espaço, hífen e
+ * apóstrofo — cobre nome composto ("Maria-Clara") e sobrenome com apóstrofo
+ * ("D'Ávila") sem abrir pra número/símbolo.
+ *
+ * Telefone: dígito + pontuação de formatação comum (espaço, parênteses,
+ * hífen, "+" do +55) — bloqueia letra e qualquer símbolo fora desse
+ * conjunto. A contagem mínima de dígitos reais é conferida à parte, depois
+ * de tirar essa pontuação (ver validateLeadPayload).
+ */
+const NOME_CHARS = "\\p{L}\\s'-";
+const TELEFONE_CHARS = "0-9()\\-\\s+";
+
+/** `\p{L}` exige a flag `u` — por isso os dois regex abaixo levam `u`, mesmo o de telefone (que não usa `\p{L}`, mas não custa manter consistente). */
+export const NOME_PATTERN = new RegExp(`^[${NOME_CHARS}]+$`, "u");
+export const TELEFONE_PATTERN = new RegExp(`^[${TELEFONE_CHARS}]+$`, "u");
+
+/** Usados por BookingForm.tsx no filtro "ao digitar" — troca por "" tudo que não estiver na classe acima. */
+export const NOME_INVALID_CHARS = new RegExp(`[^${NOME_CHARS}]`, "gu");
+export const TELEFONE_INVALID_CHARS = new RegExp(`[^${TELEFONE_CHARS}]`, "gu");
+
+/**
+ * "Melhor horário" deixou de ser texto livre — vira <select> restrito a
+ * período dentro do funcionamento real da clínica (ver Footer.tsx: seg-qui
+ * 8h-18h, sex 8h-15h). Única fonte de verdade, igual TREATMENT_OPTIONS
+ * acima: usada pelo <select> em BookingForm.tsx e pela validação abaixo.
+ */
+export const MELHOR_HORARIO_OPTIONS = ["Manhã (8h às 12h)", "Tarde (12h às 18h)"] as const;
+
+/**
  * Nome do campo que carrega o token do Cloudflare Turnstile no corpo JSON de
  * POST /api/leads. É exatamente o nome do input escondido que o próprio
  * widget injeta no formulário (`cf-turnstile-response`) — mantido igual de
@@ -201,13 +237,20 @@ export function validateLeadPayload(raw: unknown): ValidationResult {
   if (nome.length > FIELD_LIMITS.nome.max) {
     return { ok: false, error: `O nome excede o limite de ${FIELD_LIMITS.nome.max} caracteres.` };
   }
+  if (!NOME_PATTERN.test(nome)) {
+    return { ok: false, error: "O nome deve conter apenas letras (sem número ou símbolo)." };
+  }
 
   if (telefone.length > FIELD_LIMITS.telefone.max) {
     return { ok: false, error: "O telefone informado é longo demais." };
   }
+  if (!TELEFONE_PATTERN.test(telefone)) {
+    return { ok: false, error: "O telefone deve conter apenas números (sem letra ou símbolo)." };
+  }
   // Exigimos dígitos suficientes para ser discável no Brasil (DDD + 8 ou 9
-  // dígitos, com folga para +55). Sem regex de formato: o campo é texto livre
-  // e rejeitar "(31) 9 9999-0000" por causa de um espaço perderia um lead real.
+  // dígitos, com folga para +55). Sem exigir um formato exato: "31 9 9999-0000"
+  // e "31999990000" são igualmente válidos, só a pontuação já filtrada acima
+  // (TELEFONE_PATTERN) e a contagem de dígitos importam.
   const digitos = telefone.replace(/\D/g, "");
   if (digitos.length < 10 || digitos.length > 13) {
     return { ok: false, error: "Informe um telefone com DDD (ex.: 31 99999-0000)." };
@@ -217,11 +260,8 @@ export function validateLeadPayload(raw: unknown): ValidationResult {
     return { ok: false, error: "Selecione um tratamento de interesse válido." };
   }
 
-  if (melhorHorario.length > FIELD_LIMITS.melhorHorario.max) {
-    return {
-      ok: false,
-      error: `O melhor horário excede o limite de ${FIELD_LIMITS.melhorHorario.max} caracteres.`,
-    };
+  if (melhorHorario !== "" && !(MELHOR_HORARIO_OPTIONS as readonly string[]).includes(melhorHorario)) {
+    return { ok: false, error: "Selecione um período válido para o melhor horário de contato." };
   }
 
   // O `politica_versao` que o cliente mandou é IGNORADO de propósito — ver

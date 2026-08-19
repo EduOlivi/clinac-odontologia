@@ -54,7 +54,7 @@ vi.mock("../../lib/notify", () => ({
 }));
 
 const { POST } = await import("./route");
-const { TURNSTILE_TOKEN_FIELD } = await import("../../lib/leads");
+const { MELHOR_HORARIO_OPTIONS, TURNSTILE_TOKEN_FIELD } = await import("../../lib/leads");
 
 const SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
@@ -64,7 +64,7 @@ const TOKEN_VALIDO = "XXXX.DUMMY.TOKEN.XXXX";
 const VALID_BODY = {
   nome: "Maria da Silva",
   telefone: "31 99999-0000",
-  melhor_horario: "Manhã",
+  melhor_horario: MELHOR_HORARIO_OPTIONS[0],
   tratamento: "Ortodontia",
   consentimento_lgpd: true,
   consentimento_marketing: false,
