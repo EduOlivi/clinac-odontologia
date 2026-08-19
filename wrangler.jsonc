@@ -87,9 +87,10 @@
 	// ---------------------------------------------------------------------
 	"vars": {
 		// Já é pública por definição (prefixo NEXT_PUBLIC_, aparece no HTML
-		// enviado ao navegador em Open Graph/canonical). TROCAR quando o
-		// domínio real da clínica for definido — ver docs/DEPLOY.md.
-		"NEXT_PUBLIC_SITE_URL": "https://www.seudominio.com.br",
+		// enviado ao navegador em Open Graph/canonical). URL provisória do
+		// primeiro deploy (subdomínio workers.dev, 2026-08-19) — TROCAR
+		// quando o domínio real da clínica for definido, ver docs/DEPLOY.md.
+		"NEXT_PUBLIC_SITE_URL": "https://clinac-odontologia.clinacodontologia.workers.dev",
 
 		// Caminho da rota de keep-alive, usado por workers/entry.ts. Não é
 		// segredo (o segredo é o KEEPALIVE_SECRET, esse sim via

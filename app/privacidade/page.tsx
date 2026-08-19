@@ -458,9 +458,7 @@ export default function PrivacidadePage() {
             <td>
               Operador — cópia de segurança semanal, criptografada em repouso, em bucket privado
             </td>
-            <td>
-              <span className={styles.fill}>[PREENCHER: região do bucket R2 — ver 4.1]</span>
-            </td>
+            <td>América do Norte, leste (ENAM)</td>
             <td>
               Cópia integral da tabela de pedidos, <strong>incluindo o tratamento de interesse</strong>
             </td>
@@ -489,14 +487,10 @@ export default function PrivacidadePage() {
           </tr>
           <tr>
             <td>
-              <span className={styles.fill}>
-                [PREENCHER: provedor de e-mail da clínica, ex. Google Workspace / Microsoft 365]
-              </span>
+              <strong>Google LLC</strong> (Gmail)
             </td>
             <td>Operador — caixa postal que recebe o aviso</td>
-            <td>
-              <span className={styles.fill}>[PREENCHER]</span>
-            </td>
+            <td>Estados Unidos</td>
             <td>O mesmo conteúdo do e-mail de aviso</td>
           </tr>
           <tr>
@@ -526,19 +520,11 @@ export default function PrivacidadePage() {
 
       <h3>4.1 Transferência internacional de dados (LGPD, art. 33)</h3>
       <div className={styles.warn}>
-        <strong>⚠️ BLOQUEADOR DE PUBLICAÇÃO — LEIA ANTES DE PUBLICAR.</strong> Esta seção depende
-        de duas informações que ainda não foram decididas pelo dono do site: <strong>a região do
-        projeto Supabase</strong> e <strong>a região do bucket R2 de backup</strong>. Não é
-        possível publicar esta política com as duas alternativas abaixo lado a lado: a LGPD exige
-        informação <strong>prévia, clara e específica</strong> sobre o caráter internacional da
-        transferência (art. 6º, VI, e art. 33, VIII), e um consentimento dado sobre &ldquo;pode ser
-        no Brasil ou pode ser no exterior&rdquo; não é consentimento informado.{" "}
-        <strong>Escolha uma das duas redações abaixo, apague a outra, e só então publique.</strong>
+        <strong>Decidido em 2026-08-19.</strong> O projeto Supabase deste site foi criado na região{" "}
+        <strong>South America (São Paulo)</strong>. A redação abaixo reflete essa escolha — não há
+        mais alternativa em aberto.
       </div>
 
-      <p>
-        <strong>Redação A — se o banco Supabase for criado em São Paulo (sa-east-1):</strong>
-      </p>
       <p>
         <strong>Os dados do seu pedido são armazenados em servidores localizados no Brasil</strong>,
         na região de São Paulo do provedor Supabase. O armazenamento principal, portanto,{" "}
@@ -554,7 +540,7 @@ export default function PrivacidadePage() {
             a cópia de segurança dos pedidos, incluindo o tratamento de interesse (dado de saúde),
             fica armazenada fora do Brasil
           </strong>
-          , na região <span className={styles.fill}>[PREENCHER: região do bucket]</span>;
+          , na região América do Norte, leste (ENAM);
         </li>
         <li>
           o <strong>aviso por e-mail</strong> à clínica é enviado pela Resend, cujo processamento
@@ -567,44 +553,15 @@ export default function PrivacidadePage() {
           do Brasil;
         </li>
         <li>
-          as <strong>fontes tipográficas</strong> transmitem o seu IP à Google, nos Estados Unidos{" "}
-          <span className={styles.fill}>[REMOVER se fontes locais]</span>.
+          as <strong>fontes tipográficas</strong> transmitem o seu IP à Google, nos Estados Unidos.
         </li>
       </ul>
 
       <p>
-        <strong>Redação B — se o banco Supabase ficar fora do Brasil:</strong>
-      </p>
-      <p>
-        <strong>Os dados enviados pelo formulário deste site são armazenados fora do Brasil</strong>,
-        na região <span className={styles.fill}>[PREENCHER: região do projeto Supabase]</span>, além
-        das transferências descritas abaixo:
-      </p>
-      <ul>
-        <li>
-          a <strong>cópia de segurança semanal</strong> (Cloudflare R2), que inclui o{" "}
-          <strong>tratamento de interesse (dado de saúde)</strong>, fica na região{" "}
-          <span className={styles.fill}>[PREENCHER]</span>;
-        </li>
-        <li>
-          o <strong>aviso por e-mail</strong> à clínica é processado pela Resend, nos{" "}
-          <strong>Estados Unidos</strong> (sem o tratamento de interesse);
-        </li>
-        <li>
-          a <strong>verificação anti-robô</strong> e a <strong>execução do site</strong> ocorrem na
-          rede global da Cloudflare;
-        </li>
-        <li>
-          as <strong>fontes tipográficas</strong> transmitem o seu IP à Google, nos Estados Unidos{" "}
-          <span className={styles.fill}>[REMOVER se fontes locais]</span>.
-        </li>
-      </ul>
-
-      <p>
-        <strong>Em qualquer das duas redações</strong>, os países envolvidos <strong>não</strong>{" "}
-        possuem decisão de adequação da Autoridade Nacional de Proteção de Dados (ANPD). A
-        transferência é realizada com fundamento no <strong>art. 33, VIII, da LGPD</strong> — o seu
-        consentimento específico e destacado, prestado com informação prévia sobre o caráter
+        Os países envolvidos <strong>não</strong> possuem decisão de adequação da Autoridade
+        Nacional de Proteção de Dados (ANPD). A transferência é realizada com fundamento no{" "}
+        <strong>art. 33, VIII, da LGPD</strong> — o seu consentimento específico e destacado,
+        prestado com informação prévia sobre o caráter
         internacional da operação. Essa informação é apresentada a você na própria caixa de
         consentimento do formulário, antes do envio.
       </p>
@@ -619,9 +576,9 @@ export default function PrivacidadePage() {
       </p>
       <p>
         Se você não concordar com essa transferência, <strong>não utilize o formulário</strong>.
-        Nesse caso, entre em contato conosco pelo telefone{" "}
-        <span className={styles.fill}>[PREENCHER: telefone da clínica]</span>, pelo WhatsApp, por
-        e-mail ou presencialmente — esses canais não dependem do envio do formulário deste site.
+        Nesse caso, entre em contato conosco pelo telefone (31) 98618-2875, pelo WhatsApp, por
+        e-mail (clinacodonto@gmail.com) ou presencialmente — esses canais não dependem do envio do
+        formulário deste site.
       </p>
 
       <h2>5. Por quanto tempo guardamos</h2>

@@ -218,12 +218,12 @@ Estes são **todos** os terceiros que tocam em dados deste site hoje:
 
 | Terceiro | Papel | Onde fica | O que recebe |
 |---|---|---|---|
-| **Supabase** (Supabase, Inc.) | Operador — banco de dados que armazena os pedidos | `[PREENCHER: região do projeto — ver 4.1]` | Nome, telefone, melhor horário, tratamento de interesse, consentimentos, data/hora, estágio do atendimento |
+| **Supabase** (Supabase, Inc.) | Operador — banco de dados que armazena os pedidos | São Paulo, Brasil | Nome, telefone, melhor horário, tratamento de interesse, consentimentos, data/hora, estágio do atendimento |
 | **Cloudflare, Inc.** — Workers | Operador — execução do site | Rede global (processamento distribuído; sem região fixa) | Todo o conteúdo do formulário, em trânsito, no momento do envio; IP do visitante |
-| **Cloudflare, Inc.** — R2 | Operador — cópia de segurança semanal, criptografada em repouso, em bucket privado | `[PREENCHER: região do bucket R2 — ver 4.1]` | Cópia integral da tabela de pedidos, **incluindo o tratamento de interesse** |
+| **Cloudflare, Inc.** — R2 | Operador — cópia de segurança semanal, criptografada em repouso, em bucket privado | América do Norte, leste (ENAM) | Cópia integral da tabela de pedidos, **incluindo o tratamento de interesse** |
 | **Cloudflare, Inc.** — Turnstile | Operador — verificação anti-robô | Rede global | IP e sinais do navegador do visitante (ver 2.3). **Não** recebe nome, telefone nem tratamento |
 | **Resend** (Plus Five Five, Inc.) | Operador — envio do e-mail de aviso à clínica | Estados Unidos | Nome, telefone, melhor horário e se aceitou novidades. **Não** recebe o tratamento de interesse (ver 2.2) |
-| `[PREENCHER: provedor de e-mail da clínica, ex. Google Workspace / Microsoft 365]` | Operador — caixa postal que recebe o aviso | `[PREENCHER]` | O mesmo conteúdo do e-mail de aviso |
+| **Google LLC** (Gmail) | Operador — caixa postal que recebe o aviso | Estados Unidos | O mesmo conteúdo do e-mail de aviso |
 | **Google LLC** | Entrega das fontes tipográficas | Estados Unidos | IP e dados do navegador `[REMOVER se fontes locais]` |
 
 Não vendemos, alugamos nem cedemos seus dados pessoais a terceiros para fins
@@ -239,59 +239,35 @@ de perfil.
 
 ### 4.1 Transferência internacional de dados (LGPD, art. 33)
 
-> ⚠️ **BLOQUEADOR DE PUBLICAÇÃO — LEIA ANTES DE PUBLICAR.** Esta seção depende
-> de duas informações que ainda não foram decididas pelo dono do site: **a
-> região do projeto Supabase** e **a região do bucket R2 de backup**. Não é
-> possível publicar esta política com as duas alternativas abaixo lado a lado:
-> a LGPD exige informação **prévia, clara e específica** sobre o caráter
-> internacional da transferência (art. 6º, VI, e art. 33, VIII), e um
-> consentimento dado sobre "pode ser no Brasil ou pode ser no exterior" não é
-> consentimento informado. **Escolha uma das duas redações abaixo, apague a
-> outra, e só então publique.**
+> **Decidido em 2026-08-19.** O projeto Supabase deste site foi criado na
+> região **South America (São Paulo)**. A redação abaixo reflete essa escolha
+> — não há mais alternativa em aberto.
 
-**Redação A — se o banco Supabase for criado em São Paulo (`sa-east-1`):**
+**Os dados do seu pedido são armazenados em servidores localizados no
+Brasil**, na região de São Paulo do provedor Supabase. O armazenamento
+principal, portanto, **não** constitui transferência internacional.
 
-> **Os dados do seu pedido são armazenados em servidores localizados no
-> Brasil**, na região de São Paulo do provedor Supabase. O armazenamento
-> principal, portanto, **não** constitui transferência internacional.
->
-> Ainda assim, **partes do fluxo saem do Brasil**, e você precisa saber quais:
->
-> - a **cópia de segurança semanal** é gravada em bucket da Cloudflare (R2). A
->   Cloudflare **não oferece região na América do Sul para esse produto** — as
->   regiões disponíveis são América do Norte, Europa, Ásia-Pacífico e Oceania.
->   Ou seja, **a cópia de segurança dos pedidos, incluindo o tratamento de
->   interesse (dado de saúde), fica armazenada fora do Brasil**, na região
->   `[PREENCHER: região do bucket]`;
-> - o **aviso por e-mail** à clínica é enviado pela Resend, cujo processamento
->   ocorre nos **Estados Unidos** — ele leva nome, telefone e melhor horário,
->   **não** o tratamento de interesse;
-> - a **verificação anti-robô** e a **execução do site** são feitas pela
->   Cloudflare em rede distribuída globalmente, o que pode significar
->   processamento fora do Brasil;
-> - as **fontes tipográficas** transmitem o seu IP à Google, nos Estados
->   Unidos `[REMOVER se fontes locais]`.
+Ainda assim, **partes do fluxo saem do Brasil**, e você precisa saber quais:
 
-**Redação B — se o banco Supabase ficar fora do Brasil:**
+- a **cópia de segurança semanal** é gravada em bucket da Cloudflare (R2). A
+  Cloudflare **não oferece região na América do Sul para esse produto** — as
+  regiões disponíveis são América do Norte, Europa, Ásia-Pacífico e Oceania.
+  Ou seja, **a cópia de segurança dos pedidos, incluindo o tratamento de
+  interesse (dado de saúde), fica armazenada fora do Brasil**, na região
+  América do Norte, leste (ENAM);
+- o **aviso por e-mail** à clínica é enviado pela Resend, cujo processamento
+  ocorre nos **Estados Unidos** — ele leva nome, telefone e melhor horário,
+  **não** o tratamento de interesse;
+- a **verificação anti-robô** e a **execução do site** são feitas pela
+  Cloudflare em rede distribuída globalmente, o que pode significar
+  processamento fora do Brasil;
+- as **fontes tipográficas** transmitem o seu IP à Google, nos Estados Unidos.
 
-> **Os dados enviados pelo formulário deste site são armazenados fora do
-> Brasil**, na região `[PREENCHER: região do projeto Supabase]`, além das
-> transferências descritas abaixo:
->
-> - a **cópia de segurança semanal** (Cloudflare R2), que inclui o **tratamento
->   de interesse (dado de saúde)**, fica na região `[PREENCHER]`;
-> - o **aviso por e-mail** à clínica é processado pela Resend, nos **Estados
->   Unidos** (sem o tratamento de interesse);
-> - a **verificação anti-robô** e a **execução do site** ocorrem na rede
->   global da Cloudflare;
-> - as **fontes tipográficas** transmitem o seu IP à Google, nos Estados
->   Unidos `[REMOVER se fontes locais]`.
-
-**Em qualquer das duas redações**, os países envolvidos **não** possuem decisão
-de adequação da Autoridade Nacional de Proteção de Dados (ANPD). A
-transferência é realizada com fundamento no **art. 33, VIII, da LGPD** — o seu
-consentimento específico e destacado, prestado com informação prévia sobre o
-caráter internacional da operação. Essa informação é apresentada a você na
+Os países envolvidos **não** possuem decisão de adequação da Autoridade
+Nacional de Proteção de Dados (ANPD). A transferência é realizada com
+fundamento no **art. 33, VIII, da LGPD** — o seu consentimento específico e
+destacado, prestado com informação prévia sobre o caráter internacional da
+operação. Essa informação é apresentada a você na
 própria caixa de consentimento do formulário, antes do envio.
 
 `[VERIFICAR COM ADVOGADO: a Resolução CD/ANPD nº 19/2024 regulamentou a
