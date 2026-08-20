@@ -1,7 +1,7 @@
 # Termos de Uso — Site da Clínac Odontologia
 
-**Última atualização:** 14 de agosto de 2026
-**Versão:** 2.0 (minuta — pendente de revisão jurídica)
+**Última atualização:** 20 de agosto de 2026
+**Versão:** 2.1 (minuta — pendente de revisão jurídica)
 
 > ⚠️ **AVISO — ESTE DOCUMENTO AINDA NÃO FOI REVISADO POR ADVOGADO.**
 > Esta é uma minuta. Cláusulas de limitação de responsabilidade em relação de
@@ -185,8 +185,8 @@ o conteúdo não era real.
 
 O site é executado na infraestrutura da **Cloudflare** e utiliza serviços de
 terceiros para armazenamento (Supabase), verificação anti-robô (Cloudflare
-Turnstile) e envio de avisos por e-mail (Resend) — todos identificados na seção
-4 da [Política de Privacidade](PRIVACIDADE.md). A Clínac não garante
+Turnstile) e, se você usar o botão de confirmação pós-envio, o WhatsApp — todos
+identificados na seção 4 da [Política de Privacidade](PRIVACIDADE.md). A Clínac não garante
 disponibilidade ininterrupta, ausência de erros ou acesso livre de falhas, e
 pode alterar, suspender ou descontinuar o site ou qualquer de suas seções a
 qualquer tempo, sem aviso prévio.

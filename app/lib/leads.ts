@@ -35,6 +35,24 @@ export const TREATMENT_OPTIONS = [
 ] as const;
 
 /**
+ * Abertura personalizada por tratamento — usada em BookingForm.tsx pra
+ * montar a mensagem pré-preenchida do "Confirmar pelo WhatsApp" depois do
+ * envio (ver app/lib/site-config.ts, buildWhatsAppUrl). Mesma fonte única
+ * de TREATMENT_OPTIONS: uma chave por opção, `Record` obriga o TypeScript a
+ * acusar erro em tempo de build se alguém adicionar um tratamento novo e
+ * esquecer de escrever a frase correspondente aqui.
+ */
+export const TREATMENT_WHATSAPP_INTRO: Record<(typeof TREATMENT_OPTIONS)[number], string> = {
+  "Limpeza & Prevenção": "gostaria de agendar uma limpeza e avaliação preventiva",
+  "Clareamento Dental": "tenho interesse em fazer um clareamento dental",
+  Ortodontia: "tenho interesse em iniciar um tratamento ortodôntico (aparelho)",
+  Implantodontia: "gostaria de agendar uma avaliação para implante dentário",
+  Odontopediatria: "gostaria de agendar uma consulta odontopediátrica",
+  "Lentes de Contato Dental": "tenho interesse em lentes de contato dental (facetas)",
+  "Ainda não sei": "gostaria de agendar uma avaliação para saber qual tratamento preciso",
+};
+
+/**
  * Versão da política de privacidade vigente — constante do SERVIDOR, não
  * lida do campo oculto enviado pelo cliente. O campo oculto em
  * BookingForm.tsx existe só para o humano ver no dev tools; um POST direto
@@ -60,8 +78,13 @@ export const TREATMENT_OPTIONS = [
  *                    Formspree removida do fluxo; prazo de retenção definido
  *                    em 12 meses; lista de operadores e seção de transferência
  *                    internacional reescritas.
+ * v2.1 (2026-08-20): Resend removido — decisão da clínica de não usar aviso
+ *                    por e-mail. Adicionado o botão "Confirmar pelo
+ *                    WhatsApp" pós-envio (link wa.me com mensagem
+ *                    pré-preenchida, sem nenhuma API/automação por trás —
+ *                    é o visitante quem manda, se quiser).
  */
-export const CURRENT_POLICY_VERSION = "PRIVACIDADE v2.0 - 2026-08-14";
+export const CURRENT_POLICY_VERSION = "PRIVACIDADE v2.1 - 2026-08-20";
 
 export const LEAD_STATUSES = ["novo", "contatado", "agendado", "compareceu"] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];

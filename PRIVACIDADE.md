@@ -1,7 +1,7 @@
 # Política de Privacidade — Clínac Odontologia
 
-**Última atualização:** 14 de agosto de 2026
-**Versão:** 2.0 (minuta — pendente de revisão jurídica)
+**Última atualização:** 20 de agosto de 2026
+**Versão:** 2.1 (minuta — pendente de revisão jurídica)
 
 > ⚠️ **AVISO — ESTE DOCUMENTO AINDA NÃO FOI REVISADO POR ADVOGADO.**
 > Esta é uma minuta redigida com base no que o site efetivamente coleta hoje.
@@ -13,13 +13,26 @@
 > **O que mudou da v1.0 para a v2.0.** A v1.0 descrevia um site estático cujo
 > formulário era enviado à **Formspree, Inc.**, hospedado no GitHub Pages. Essa
 > arquitetura não existe mais. Hoje o site roda em **Cloudflare Workers**, os
-> pedidos de avaliação são gravados em um banco **Supabase**, o aviso de novo
-> pedido é enviado pela **Resend**, o backup semanal vai para um bucket
-> **Cloudflare R2** e o formulário é protegido pelo **Cloudflare Turnstile**.
-> Toda a seção 4 (compartilhamento e transferência internacional) e a seção 5
-> (retenção) foram reescritas por causa disso. Quem enviou um formulário sob a
-> v1.0 aceitou aquele texto — o registro de qual versão cada pessoa aceitou
-> fica gravado junto do pedido (ver seção 10).
+> pedidos de avaliação são gravados em um banco **Supabase**, o backup semanal
+> vai para um bucket **Cloudflare R2** e o formulário é protegido pelo
+> **Cloudflare Turnstile**. Toda a seção 4 (compartilhamento e transferência
+> internacional) e a seção 5 (retenção) foram reescritas por causa disso.
+
+> **O que mudou da v2.0 para a v2.1 (2026-08-20).** A clínica decidiu **não**
+> usar a Resend para aviso de novo pedido por e-mail — o aviso é por e-mail
+> demais movimentado e o time só confia mesmo no WhatsApp, que é o canal que
+> acompanham o dia todo. A Resend foi removida da lista de operadores (não
+> processa mais nenhum dado deste site). Em troca, depois de um envio
+> confirmado, o site mostra um botão **"Confirmar pelo WhatsApp"**: um link
+> `wa.me` com uma mensagem já preenchida (nome, tratamento de interesse,
+> melhor horário) que **o próprio visitante escolhe enviar ou não** — não é
+> uma automação do lado do servidor, é o mesmo tipo de link que o botão
+> flutuante de WhatsApp já usava, só que agora com o texto pronto. Ver 2.2 e
+> 4 para o detalhe de a quem esse clique leva dado.
+>
+> Quem enviou um formulário sob uma versão anterior aceitou aquele texto — o
+> registro de qual versão cada pessoa aceitou fica gravado junto do pedido
+> (ver seção 10).
 
 ---
 
@@ -98,13 +111,19 @@ Vale a pena descrever o caminho, porque ele explica as seções 4 e 5:
    registro fica guardado, e é dali que a equipe da clínica o lê, por um painel
    interno protegido por login. A região desse banco está indicada na seção
    4.1.
-3. **Um aviso é enviado por e-mail à clínica, pela Resend.** Esse e-mail leva
-   **apenas nome, telefone, melhor horário e se você aceitou receber
-   novidades** — o **tratamento de interesse não é enviado por e-mail**,
-   justamente por ser dado de saúde; ele fica visível só no painel interno.
-4. **Uma cópia de segurança semanal** de toda a tabela de pedidos é gravada,
+3. **Uma cópia de segurança semanal** de toda a tabela de pedidos é gravada,
    criptografada em repouso, em um bucket privado da própria Cloudflare (R2).
    Ver seções 4 e 5.
+4. **Depois de um envio confirmado, você pode escolher confirmar pelo
+   WhatsApp.** O site mostra um botão "Confirmar pelo WhatsApp" com uma
+   mensagem já preenchida (seu nome, o tratamento de interesse escolhido e o
+   melhor horário, se informado). **Isso é opcional e só acontece se você
+   clicar** — é um link comum (`wa.me`), o mesmo mecanismo do botão flutuante
+   de WhatsApp que já existe no site, sem nenhuma automação do nosso lado.
+   Ao clicar, seu navegador é direcionado ao WhatsApp com o texto pronto no
+   campo de digitação; **você decide se envia**. Como é um redirecionamento
+   normal de link, os dados que aparecem no texto passam pelo WhatsApp (Meta
+   Platforms, Inc.) nesse momento — ver seção 4.
 
 ### 2.3 Verificação anti-robô (Cloudflare Turnstile)
 
@@ -222,20 +241,20 @@ Estes são **todos** os terceiros que tocam em dados deste site hoje:
 | **Cloudflare, Inc.** — Workers | Operador — execução do site | Rede global (processamento distribuído; sem região fixa) | Todo o conteúdo do formulário, em trânsito, no momento do envio; IP do visitante |
 | **Cloudflare, Inc.** — R2 | Operador — cópia de segurança semanal, criptografada em repouso, em bucket privado | América do Norte, leste (ENAM) | Cópia integral da tabela de pedidos, **incluindo o tratamento de interesse** |
 | **Cloudflare, Inc.** — Turnstile | Operador — verificação anti-robô | Rede global | IP e sinais do navegador do visitante (ver 2.3). **Não** recebe nome, telefone nem tratamento |
-| **Resend** (Plus Five Five, Inc.) | Operador — envio do e-mail de aviso à clínica | Estados Unidos | Nome, telefone, melhor horário e se aceitou novidades. **Não** recebe o tratamento de interesse (ver 2.2) |
-| **Google LLC** (Gmail) | Operador — caixa postal que recebe o aviso | Estados Unidos | O mesmo conteúdo do e-mail de aviso |
+| **WhatsApp** (Meta Platforms, Inc.) | Operador — só se você clicar em "Confirmar pelo WhatsApp" após o envio; **opcional**, nunca automático | Estados Unidos | Nome, tratamento de interesse (**dado de saúde**) e melhor horário, no texto pré-preenchido da mensagem (ver 2.2). O telefone não vai no texto, mas fica implícito por ser uma conversa de WhatsApp |
 | **Google LLC** | Entrega das fontes tipográficas | Estados Unidos | IP e dados do navegador `[REMOVER se fontes locais]` |
 
 Não vendemos, alugamos nem cedemos seus dados pessoais a terceiros para fins
 comerciais. Não usamos seus dados para decisões automatizadas nem para criação
 de perfil.
 
-> **Nota interna, a remover antes de publicar.** Existe uma chave de
-> configuração (`LEAD_EMAIL_INCLUDE_HEALTH_DATA`) capaz de passar a incluir o
-> tratamento de interesse no e-mail de aviso. Ela está **desligada**, e esta
-> política foi escrita com ela desligada. **Ligá-la exige uma nova decisão de
-> compliance e a atualização desta seção e da 4.1**, porque passaria a copiar
-> dado de saúde para a Resend (EUA) e para a caixa postal da clínica.
+> **Nota interna, a remover antes de publicar.** O código ainda tem a
+> integração com a Resend (e uma chave de configuração,
+> `LEAD_EMAIL_INCLUDE_HEALTH_DATA`, que controlaria se o tratamento de
+> interesse iria no e-mail) — mas **desde 2026-08-20 nenhuma credencial da
+> Resend está configurada**, então nada é enviado por lá de fato. Se um dia a
+> clínica voltar a usar aviso por e-mail, isso volta a exigir uma decisão de
+> compliance e a reescrita desta seção e da 4.1.
 
 ### 4.1 Transferência internacional de dados (LGPD, art. 33)
 
@@ -255,13 +274,14 @@ Ainda assim, **partes do fluxo saem do Brasil**, e você precisa saber quais:
   Ou seja, **a cópia de segurança dos pedidos, incluindo o tratamento de
   interesse (dado de saúde), fica armazenada fora do Brasil**, na região
   América do Norte, leste (ENAM);
-- o **aviso por e-mail** à clínica é enviado pela Resend, cujo processamento
-  ocorre nos **Estados Unidos** — ele leva nome, telefone e melhor horário,
-  **não** o tratamento de interesse;
 - a **verificação anti-robô** e a **execução do site** são feitas pela
   Cloudflare em rede distribuída globalmente, o que pode significar
   processamento fora do Brasil;
-- as **fontes tipográficas** transmitem o seu IP à Google, nos Estados Unidos.
+- as **fontes tipográficas** transmitem o seu IP à Google, nos Estados Unidos;
+- **se, e só se, você clicar em "Confirmar pelo WhatsApp"** depois de um
+  envio, seu nome, o tratamento de interesse (dado de saúde) e o melhor
+  horário passam pelo WhatsApp (Meta Platforms, Inc.), nos Estados Unidos —
+  isso é opcional e nunca acontece de forma automática (ver 2.2).
 
 Os países envolvidos **não** possuem decisão de adequação da Autoridade
 Nacional de Proteção de Dados (ANPD). A transferência é realizada com
@@ -293,7 +313,7 @@ canais não dependem do envio do formulário deste site.
 | Prontuário odontológico (fora deste site) | `[PREENCHER: prazo confirmado com o responsável técnico / CRO-MG; usualmente no mínimo 10 anos contados do último atendimento]` |
 | Consentimento de marketing | Enquanto não for revogado. O pedido de revogação é registrado **fora do banco** (registro administrativo da clínica) e guardado por **5 anos**, como prova de que foi atendido |
 | Logs técnicos com IP (Cloudflare) | **3 dias**, prazo de retenção de log da plataforma no plano utilizado |
-| Registros técnicos de terceiros (Google, Resend, provedor de e-mail) | Pelo prazo definido por cada um desses fornecedores, fora do nosso controle |
+| Registros técnicos de terceiros (Google, WhatsApp — só se você usar o botão de confirmação) | Pelo prazo definido por cada um desses fornecedores, fora do nosso controle |
 
 **Por que 12 meses.** É o prazo em que um pedido de avaliação ainda tem
 finalidade real (retomar contato com quem demonstrou interesse dentro de um

@@ -12,11 +12,16 @@ import {
   NOME_INVALID_CHARS,
   TELEFONE_INVALID_CHARS,
   TREATMENT_OPTIONS,
+  TREATMENT_WHATSAPP_INTRO,
   TURNSTILE_TOKEN_FIELD,
 } from "../lib/leads";
+import { buildWhatsAppUrl } from "../lib/site-config";
 import TurnstileWidget, { TEST_SITE_KEY_ALWAYS_PASSES } from "./TurnstileWidget";
 
-type FeedbackState = { type: "success" | "error"; message: string } | null;
+type FeedbackState =
+  | { type: "success"; message: string; whatsappUrl: string }
+  | { type: "error"; message: string }
+  | null;
 
 const SUBMIT_TIMEOUT_MS = 15000;
 
@@ -183,10 +188,27 @@ export default function BookingForm() {
         if (treatment) {
           trackEvent("treatment_interest_selected", { treatment });
         }
+
+        // Mensagem pré-preenchida do wa.me — montada com os valores JÁ
+        // capturados em `payload`, então não depende do form.reset() logo
+        // abaixo. O pedido em si já está salvo no Supabase nesse ponto
+        // (é a fonte confiável, sempre visível no painel); isto aqui é só
+        // um atalho pro visitante confirmar no canal que a equipe da
+        // clínica realmente acompanha (pedido explícito da clínica,
+        // 2026-08-20 — WhatsApp em vez de aviso por e-mail).
+        const intro = TREATMENT_WHATSAPP_INTRO[treatment as keyof typeof TREATMENT_WHATSAPP_INTRO];
+        const partesMensagem = [
+          `Olá! Meu nome é ${payload.nome}${intro ? `, ${intro}` : ""}.`,
+          payload.melhor_horario ? `Prefiro contato no período: ${payload.melhor_horario}.` : "",
+          "Acabei de preencher o formulário no site.",
+        ].filter(Boolean);
+        const whatsappUrl = buildWhatsAppUrl(partesMensagem.join(" "));
+
         form.reset();
         setFeedback({
           type: "success",
-          message: "Recebemos seu pedido! Nossa equipe entra em contato em breve para confirmar o horário.",
+          message: "Recebemos seu pedido! Confirme rapidinho pelo WhatsApp pra agilizar seu atendimento.",
+          whatsappUrl,
         });
       } else if (result?.code === "desafio") {
         // Caso próprio de propósito: aqui o que falhou foi a verificação
@@ -309,8 +331,8 @@ export default function BookingForm() {
             <span className="consent-tag required">Obrigatório</span>Autorizo a Clínac a tratar meu
             nome, telefone e o tratamento de interesse informado — que é <strong>dado de saúde</strong>{" "}
             — para retornar meu contato e agendar minha avaliação. Autorizo também que esses dados
-            sejam processados pelos serviços de tecnologia usados por este site (Supabase, Cloudflare
-            e Resend), <strong>parte deles com infraestrutura fora do Brasil</strong> — transferência
+            sejam processados pelos serviços de tecnologia usados por este site (Supabase e
+            Cloudflare), <strong>parte deles com infraestrutura fora do Brasil</strong> — transferência
             internacional detalhada na seção 4 da{" "}
             <Link href="/privacidade" target="_blank" rel="noopener">
               Política de Privacidade
@@ -336,7 +358,7 @@ export default function BookingForm() {
           app/lib/leads.ts). O servidor IGNORA o que chega aqui e grava a
           constante dele — este campo existe só para quem abrir o dev tools
           conseguir ver qual versão está sendo aceita. Mantenha os dois iguais. */}
-      <input type="hidden" name="politica_versao" value="PRIVACIDADE v2.0 - 2026-08-14" />
+      <input type="hidden" name="politica_versao" value="PRIVACIDADE v2.1 - 2026-08-20" />
 
       {/* Honeypot anti-spam: campo escondido do usuário. O frontend não filtra
           nada com base nele — quem precisa descartar envios com _gotcha
@@ -379,6 +401,18 @@ export default function BookingForm() {
       >
         {feedback?.message}
       </p>
+      {feedback?.type === "success" ? (
+        <a
+          href={feedback.whatsappUrl}
+          target="_blank"
+          rel="noopener"
+          className="btn btn-primary"
+          style={{ marginTop: "12px" }}
+          onClick={() => trackEvent("whatsapp_click", { source: "post_submit_confirmation" })}
+        >
+          Confirmar pelo WhatsApp
+        </a>
+      ) : null}
       <p className="form-note">
         Formulário para maiores de 18 anos. Se a avaliação for para criança ou adolescente, o
         preenchimento deve ser feito pelo responsável legal. Não envie CPF, número de convênio ou

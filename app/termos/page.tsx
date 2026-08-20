@@ -27,7 +27,7 @@ export default function TermosPage() {
   return (
     <LegalLayout
       title="Termos de Uso"
-      lastUpdated="Última atualização: 14 de agosto de 2026 · Versão 2.0 (minuta — pendente de revisão jurídica)"
+      lastUpdated="Última atualização: 20 de agosto de 2026 · Versão 2.1 (minuta — pendente de revisão jurídica)"
       warning={
         <>
           <strong>⚠️ AVISO — ESTE DOCUMENTO AINDA NÃO FOI REVISADO POR ADVOGADO.</strong>
@@ -269,8 +269,8 @@ export default function TermosPage() {
       <h2>9. Disponibilidade do site</h2>
       <p>
         O site é executado na infraestrutura da <strong>Cloudflare</strong> e utiliza serviços de
-        terceiros para armazenamento (Supabase), verificação anti-robô (Cloudflare Turnstile) e
-        envio de avisos por e-mail (Resend) — todos identificados na seção 4 da{" "}
+        terceiros para armazenamento (Supabase), verificação anti-robô (Cloudflare Turnstile) e, se
+        você usar o botão de confirmação pós-envio, o WhatsApp — todos identificados na seção 4 da{" "}
         <Link href="/privacidade">Política de Privacidade</Link>. A Clínac não garante
         disponibilidade ininterrupta, ausência de erros ou acesso livre de falhas, e pode alterar,
         suspender ou descontinuar o site ou qualquer de suas seções a qualquer tempo, sem aviso

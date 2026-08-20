@@ -36,7 +36,7 @@ export default function PrivacidadePage() {
   return (
     <LegalLayout
       title="Política de Privacidade"
-      lastUpdated="Última atualização: 14 de agosto de 2026 · Versão 2.0 (minuta — pendente de revisão jurídica)"
+      lastUpdated="Última atualização: 20 de agosto de 2026 · Versão 2.1 (minuta — pendente de revisão jurídica)"
       warning={
         <>
           <strong>⚠️ AVISO — ESTE DOCUMENTO AINDA NÃO FOI REVISADO POR ADVOGADO.</strong>
@@ -61,12 +61,26 @@ export default function PrivacidadePage() {
         <strong>O que mudou da v1.0 para a v2.0.</strong> A v1.0 descrevia um site estático cujo
         formulário era enviado à <strong>Formspree, Inc.</strong>, hospedado no GitHub Pages. Essa
         arquitetura não existe mais. Hoje o site roda em <strong>Cloudflare Workers</strong>, os
-        pedidos de avaliação são gravados em um banco <strong>Supabase</strong>, o aviso de novo
-        pedido é enviado pela <strong>Resend</strong>, o backup semanal vai para um bucket{" "}
-        <strong>Cloudflare R2</strong> e o formulário é protegido pelo{" "}
+        pedidos de avaliação são gravados em um banco <strong>Supabase</strong>, o backup semanal
+        vai para um bucket <strong>Cloudflare R2</strong> e o formulário é protegido pelo{" "}
         <strong>Cloudflare Turnstile</strong>. As seções 4 e 5 foram reescritas por causa disso.
-        Quem enviou um formulário sob a v1.0 aceitou aquele texto — o registro de qual versão cada
-        pessoa aceitou fica gravado junto do pedido (ver seção 10).
+      </div>
+
+      <div className={styles.warn}>
+        <strong>O que mudou da v2.0 para a v2.1 (2026-08-20).</strong> A clínica decidiu{" "}
+        <strong>não</strong> usar a Resend para aviso de novo pedido por e-mail — o e-mail é muito
+        movimentado e o time só confia mesmo no WhatsApp, canal que acompanham o dia todo. A Resend
+        foi removida da lista de operadores (não processa mais nenhum dado deste site). Em troca,
+        depois de um envio confirmado, o site mostra um botão{" "}
+        <strong>&ldquo;Confirmar pelo WhatsApp&rdquo;</strong>: um link <code>wa.me</code> com uma
+        mensagem já preenchida (nome, tratamento de interesse, melhor horário) que{" "}
+        <strong>o próprio visitante escolhe enviar ou não</strong> — não é uma automação do lado do
+        servidor, é o mesmo mecanismo do botão flutuante de WhatsApp que já existia, só que agora
+        com o texto pronto. Ver seções 2.2 e 4.
+        <br />
+        <br />
+        Quem enviou um formulário sob uma versão anterior aceitou aquele texto — o registro de qual
+        versão cada pessoa aceitou fica gravado junto do pedido (ver seção 10).
       </div>
 
       <h2>1. Quem somos (Controlador dos dados)</h2>
@@ -205,15 +219,21 @@ export default function PrivacidadePage() {
           protegido por login. A região desse banco está indicada na seção 4.1.
         </li>
         <li>
-          <strong>Um aviso é enviado por e-mail à clínica, pela Resend.</strong> Esse e-mail leva{" "}
-          <strong>apenas nome, telefone, melhor horário e se você aceitou receber novidades</strong>{" "}
-          — o <strong>tratamento de interesse não é enviado por e-mail</strong>, justamente por ser
-          dado de saúde; ele fica visível só no painel interno.
-        </li>
-        <li>
           <strong>Uma cópia de segurança semanal</strong> de toda a tabela de pedidos é gravada,
           criptografada em repouso, em um bucket privado da própria Cloudflare (R2). Ver seções 4
           e 5.
+        </li>
+        <li>
+          <strong>Depois de um envio confirmado, você pode escolher confirmar pelo WhatsApp.</strong>{" "}
+          O site mostra um botão &ldquo;Confirmar pelo WhatsApp&rdquo; com uma mensagem já
+          preenchida (seu nome, o tratamento de interesse escolhido e o melhor horário, se
+          informado). <strong>Isso é opcional e só acontece se você clicar</strong> — é um link
+          comum (<code>wa.me</code>), o mesmo mecanismo do botão flutuante de WhatsApp que já
+          existe no site, sem nenhuma automação do nosso lado. Ao clicar, seu navegador é
+          direcionado ao WhatsApp com o texto pronto no campo de digitação;{" "}
+          <strong>você decide se envia</strong>. Como é um redirecionamento normal de link, os
+          dados que aparecem no texto passam pelo WhatsApp (Meta Platforms, Inc.) nesse momento —
+          ver seção 4.
         </li>
       </ol>
 
@@ -476,22 +496,18 @@ export default function PrivacidadePage() {
           </tr>
           <tr>
             <td>
-              <strong>Resend</strong> (Plus Five Five, Inc.)
+              <strong>WhatsApp</strong> (Meta Platforms, Inc.)
             </td>
-            <td>Operador — envio do e-mail de aviso à clínica</td>
+            <td>
+              Operador — só se você clicar em &ldquo;Confirmar pelo WhatsApp&rdquo; após o envio;{" "}
+              <strong>opcional</strong>, nunca automático
+            </td>
             <td>Estados Unidos</td>
             <td>
-              Nome, telefone, melhor horário e se aceitou novidades. <strong>Não</strong> recebe o
-              tratamento de interesse (ver 2.2)
+              Nome, tratamento de interesse (<strong>dado de saúde</strong>) e melhor horário, no
+              texto pré-preenchido da mensagem (ver 2.2). O telefone não vai no texto, mas fica
+              implícito por ser uma conversa de WhatsApp
             </td>
-          </tr>
-          <tr>
-            <td>
-              <strong>Google LLC</strong> (Gmail)
-            </td>
-            <td>Operador — caixa postal que recebe o aviso</td>
-            <td>Estados Unidos</td>
-            <td>O mesmo conteúdo do e-mail de aviso</td>
           </tr>
           <tr>
             <td>
@@ -510,12 +526,13 @@ export default function PrivacidadePage() {
         Não usamos seus dados para decisões automatizadas nem para criação de perfil.
       </p>
       <div className={styles.warn}>
-        <strong>Nota interna, a remover antes de publicar.</strong> Existe uma chave de
-        configuração (<code>LEAD_EMAIL_INCLUDE_HEALTH_DATA</code>) capaz de passar a incluir o
-        tratamento de interesse no e-mail de aviso. Ela está <strong>desligada</strong>, e esta
-        política foi escrita com ela desligada. <strong>Ligá-la exige uma nova decisão de
-        compliance e a atualização desta seção e da 4.1</strong>, porque passaria a copiar dado de
-        saúde para a Resend (EUA) e para a caixa postal da clínica.
+        <strong>Nota interna, a remover antes de publicar.</strong> O código ainda tem a
+        integração com a Resend (e uma chave de configuração,{" "}
+        <code>LEAD_EMAIL_INCLUDE_HEALTH_DATA</code>, que controlaria se o tratamento de interesse
+        iria no e-mail) — mas <strong>desde 2026-08-20 nenhuma credencial da Resend está
+        configurada</strong>, então nada é enviado por lá de fato. Se um dia a clínica voltar a
+        usar aviso por e-mail, isso volta a exigir uma decisão de compliance e a reescrita desta
+        seção e da 4.1.
       </div>
 
       <h3>4.1 Transferência internacional de dados (LGPD, art. 33)</h3>
@@ -543,17 +560,18 @@ export default function PrivacidadePage() {
           , na região América do Norte, leste (ENAM);
         </li>
         <li>
-          o <strong>aviso por e-mail</strong> à clínica é enviado pela Resend, cujo processamento
-          ocorre nos <strong>Estados Unidos</strong> — ele leva nome, telefone e melhor horário,{" "}
-          <strong>não</strong> o tratamento de interesse;
-        </li>
-        <li>
           a <strong>verificação anti-robô</strong> e a <strong>execução do site</strong> são feitas
           pela Cloudflare em rede distribuída globalmente, o que pode significar processamento fora
           do Brasil;
         </li>
         <li>
-          as <strong>fontes tipográficas</strong> transmitem o seu IP à Google, nos Estados Unidos.
+          as <strong>fontes tipográficas</strong> transmitem o seu IP à Google, nos Estados Unidos;
+        </li>
+        <li>
+          <strong>se, e só se, você clicar em &ldquo;Confirmar pelo WhatsApp&rdquo;</strong> depois
+          de um envio, seu nome, o tratamento de interesse (dado de saúde) e o melhor horário
+          passam pelo WhatsApp (Meta Platforms, Inc.), nos Estados Unidos — isso é opcional e nunca
+          acontece de forma automática (ver 2.2).
         </li>
       </ul>
 
@@ -629,7 +647,7 @@ export default function PrivacidadePage() {
             </td>
           </tr>
           <tr>
-            <td>Registros técnicos de terceiros (Google, Resend, provedor de e-mail)</td>
+            <td>Registros técnicos de terceiros (Google, WhatsApp — só se você usar o botão de confirmação)</td>
             <td>Pelo prazo definido por cada um desses fornecedores, fora do nosso controle</td>
           </tr>
         </tbody>

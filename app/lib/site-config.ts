@@ -12,4 +12,15 @@ export const SITE_URL =
 export const SITE_NAME = "Clínac Odontologia";
 
 // Número real confirmado pelo dono do site em 2026-08-14 (+55 31 98618-2875).
-export const WHATSAPP_URL = "https://wa.me/5531986182875";
+const WHATSAPP_NUMBER = "5531986182875";
+export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
+
+/**
+ * Monta um link wa.me com mensagem pré-preenchida. Continua sendo só um
+ * link — abre o WhatsApp do visitante com o texto já no campo de digitação,
+ * quem manda é ele, com um toque a mais. Nenhuma API/automação por trás:
+ * mesmo mecanismo do botão flutuante, só que com `text` preenchido.
+ */
+export function buildWhatsAppUrl(text: string): string {
+  return `${WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
+}

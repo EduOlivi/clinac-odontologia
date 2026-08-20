@@ -27,8 +27,11 @@
 
    EVENTOS DISPARADOS E O QUE CADA UM CARREGA (nunca nome/telefone/e-mail):
      - whatsapp_click
-         dispara no clique nos DOIS pontos de contato do WhatsApp.
-         prop: { source: 'floating' | 'inline' }
+         dispara no clique em qualquer ponto de contato do WhatsApp.
+         prop: { source: 'floating' | 'inline' | 'post_submit_confirmation' }
+         ('post_submit_confirmation' = botão "Confirmar pelo WhatsApp" que
+         aparece só depois de um envio de formulário confirmado — ver
+         BookingForm.tsx e app/lib/site-config.ts, buildWhatsAppUrl)
      - form_submit_success
          dispara só quando o backend confirma o envio (ver
          app/components/BookingForm.tsx). Não carrega propriedade nenhuma:
