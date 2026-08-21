@@ -19,10 +19,9 @@ import { createServiceRoleClient } from "../../lib/supabase/admin";
    workers/entry.ts) — grava um JSON com todos os leads no bucket R2
    `BACKUPS_BUCKET` (mesma conta Cloudflare que já hospeda o Worker, então
    isto NÃO introduz um novo terceiro no fluxo de dado de saúde — ao
-   contrário de, por exemplo, mandar o dump por e-mail via Resend, que
-   copiaria dado de saúde para mais uma empresa + a caixa postal da clínica
-   sem uma decisão de compliance por trás, do mesmo jeito que
-   app/lib/notify.ts já trata isso para o aviso de lead individual).
+   contrário de, por exemplo, mandar o dump por e-mail, que copiaria dado
+   de saúde para mais uma empresa + a caixa postal da clínica sem uma
+   decisão de compliance por trás).
 
    >>> RETENÇÃO: 8 DUMPS, AGORA REVISADO POR COMPLIANCE (2026-08-14) <<<
    Mantém só os `RETENCAO_MAX_BACKUPS` dumps mais recentes (rotaciona os

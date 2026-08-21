@@ -74,8 +74,8 @@ export const backupExportSecret = () => optional("BACKUP_EXPORT_SECRET");
 
 /**
  * Chave PRIVADA do widget Turnstile, usada só na chamada server-side ao
- * `siteverify` (app/lib/turnstile.ts). Mesma régua da `service_role` e da
- * `RESEND_API_KEY`: nunca em componente de cliente, nunca com prefixo
+ * `siteverify` (app/lib/turnstile.ts). Mesma régua da `service_role`:
+ * nunca em componente de cliente, nunca com prefixo
  * `NEXT_PUBLIC_`. Se vazar, um atacante consegue validar tokens em nome
  * deste site — rotacione no painel da Cloudflare (Turnstile -> widget ->
  * Settings -> Rotate secret key).
@@ -100,25 +100,3 @@ export const turnstileSecretKey = () => optional("TURNSTILE_SECRET_KEY");
  */
 export const turnstileSiteKey = () => optional("NEXT_PUBLIC_TURNSTILE_SITE_KEY");
 
-/* ---------- Notificação de novo lead (Resend) ---------- */
-
-export const resendApiKey = () => optional("RESEND_API_KEY");
-export const leadNotificationFrom = () => optional("LEAD_NOTIFICATION_FROM");
-export const leadNotificationTo = () =>
-  (optional("LEAD_NOTIFICATION_TO") ?? "")
-    .split(",")
-    .map((e) => e.trim())
-    .filter(Boolean);
-
-/**
- * Se `true`, o e-mail de aviso inclui o tratamento de interesse — que é DADO
- * DE SAÚDE (LGPD art. 11). O padrão é `false`: o e-mail avisa que chegou um
- * lead e dá nome/telefone para o retorno, e o dado de saúde fica só no banco,
- * visível no painel. Ver comentário completo em app/lib/notify.ts.
- */
-export const includeHealthDataInEmail = () =>
-  (optional("LEAD_EMAIL_INCLUDE_HEALTH_DATA") ?? "false").toLowerCase() === "true";
-
-/** URL pública do site, usada só para montar o link do painel no e-mail. */
-export const siteUrl = () =>
-  optional("NEXT_PUBLIC_SITE_URL") ?? "https://eduolivi.github.io/clinac-odontologia";

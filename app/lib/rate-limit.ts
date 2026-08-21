@@ -33,9 +33,9 @@
         mesmo sendo síncrona hoje).
 
    Nada aqui protege contra conta paralisada por custo, porque não há esse
-   risco nesta stack: o plano free do Supabase, do Resend e do Workers
-   degrada/recusa quando estoura a cota, não gera fatura. O prejuízo de um
-   flood é lixo no banco e cota de e-mail queimada — não uma cobrança.
+   risco nesta stack: o plano free do Supabase e do Workers degrada/recusa
+   quando estoura a cota, não gera fatura. O prejuízo de um flood é lixo no
+   banco — não uma cobrança.
    ========================================================================== */
 
 export type RateLimitDecision = {

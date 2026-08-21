@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { MAX_BODY_BYTES, TURNSTILE_TOKEN_FIELD, validateLeadPayload } from "../../lib/leads";
-import { notifyNewLead } from "../../lib/notify";
 import { checkRateLimit, clientIp } from "../../lib/rate-limit";
 import { createServiceRoleClient } from "../../lib/supabase/admin";
 import { verifyTurnstile } from "../../lib/turnstile";
@@ -34,6 +33,12 @@ import { verifyTurnstile } from "../../lib/turnstile";
    de INSERT para `anon` nem para `authenticated`. É o oposto do desenho
    anterior do site, em que o endpoint do formulário era público e qualquer
    pessoa podia postar nele direto.
+
+   NÃO HÁ AVISO POR E-MAIL: decisão da clínica (2026-08-20, ver
+   app/lib/leads.ts, changelog de CURRENT_POLICY_VERSION) de usar só o
+   WhatsApp — o botão "Confirmar pelo WhatsApp" em BookingForm.tsx, que o
+   próprio visitante decide enviar. O lead salvo aqui continua sendo a fonte
+   confiável, sempre visível no painel /admin/leads.
    ========================================================================== */
 
 /** 5 envios por IP a cada 10 min. Um paciente real manda 1; um bot, milhares. */
@@ -124,14 +129,15 @@ export async function POST(request: Request) {
   // ---- 5. Turnstile (o portão anti-bot de verdade) ---------------------
   // >>> A POSIÇÃO DESTE BLOCO É A DEFESA, NÃO SÓ A CHAMADA. <<<
   // Ele vem depois das checagens de graça (as de cima não custam nem uma
-  // chamada de rede) e ANTES de validar, gravar e — o que importa —
-  // notificar. Um desafio ausente ou reprovado precisa custar ZERO e-mail:
-  // o achado que motivou este código é justamente que ~100 requisições
-  // roteirizadas queimam a cota diária do Resend e, a partir dali, lead de
-  // paciente REAL não gera aviso nenhum. Ver app/lib/turnstile.ts.
+  // chamada de rede) e ANTES de validar e gravar. Um desafio ausente ou
+  // reprovado precisa custar ZERO escrita no banco: o achado que motivou
+  // este código é justamente que ~100 requisições roteirizadas conseguiam
+  // sujar a tabela de leads e soterrar o painel /admin/leads (sem paginação
+  // nem busca) com lixo, empurrando os leads reais para fora da tela. Ver
+  // app/lib/turnstile.ts.
   //
   // Se você está movendo isto para baixo: não mova. Existe teste travando
-  // (route.test.ts, "Resend NÃO é chamado quando o Turnstile falha").
+  // (route.test.ts, "o insert NÃO é chamado quando o Turnstile falha").
   const turnstile = await verifyTurnstile(
     (parsed as Record<string, unknown> | null)?.[TURNSTILE_TOKEN_FIELD],
     ip,
@@ -179,23 +185,11 @@ export async function POST(request: Request) {
   }
   const lead = validation.data;
 
-  // ---- 7. Grava e avisa, em paralelo ----------------------------------
-  // O id é gerado aqui (a coluna também tem default no banco) só para que o
-  // e-mail possa citá-lo SEM precisar esperar o insert terminar — é isso que
-  // permite as duas operações correrem de fato em paralelo.
+  // ---- 7. Grava o lead ---------------------------------------------------
+  // O id é gerado aqui (a coluna também tem default no banco) para que a
+  // resposta e os logs abaixo possam citá-lo sem depender do retorno do
+  // insert.
   const leadId = crypto.randomUUID();
-
-  // Dispara o e-mail JÁ, sem esperar o banco. O `.catch` é preso aqui na
-  // mesma linha de propósito: uma promise rejeitada que só ganha handler
-  // depois de um `await` no meio vira "unhandled rejection" e, no Workers,
-  // pode derrubar a requisição inteira.
-  const notifyPromise = notifyNewLead(lead, leadId).catch(
-    (reason): { sent: false; reason: "excecao"; detail: string } => ({
-      sent: false,
-      reason: "excecao",
-      detail: String(reason),
-    }),
-  );
 
   let insertFailure: { codigo?: string; mensagem: string } | null = null;
   try {
@@ -213,31 +207,12 @@ export async function POST(request: Request) {
     insertFailure = { mensagem: err instanceof Error ? err.message : String(err) };
   }
 
-  // -- A notificação NUNCA derruba a requisição --
-  // Ela é efeito colateral, não a fonte da verdade. Se o Resend estiver fora
-  // do ar, o lead já está no banco e o painel mostra tudo; falhar aqui seria
-  // descartar um lead válido por causa de um e-mail.
-  const notifyResult = await notifyPromise;
-  if (!notifyResult.sent) {
-    console.error(
-      JSON.stringify({
-        evento: "lead_notify_falhou",
-        leadId,
-        motivo: notifyResult.reason,
-        detalhe: notifyResult.detail,
-      }),
-    );
-  }
-
-  // -- O insert, sim, decide a resposta --
   if (insertFailure) {
     console.error(JSON.stringify({ evento: "lead_insert_erro", leadId, ...insertFailure }));
     return fail(503, "indisponivel", "Houve uma falha ao registrar seu pedido.");
   }
 
-  console.info(
-    JSON.stringify({ evento: "lead_criado", leadId, notificado: notifyResult.sent }),
-  );
+  console.info(JSON.stringify({ evento: "lead_criado", leadId }));
   return success();
 }
 
@@ -245,9 +220,9 @@ export async function POST(request: Request) {
    Nota de modo de falha (para quem for depurar um dia):
 
    Se o projeto Supabase estiver PAUSADO por inatividade, o insert falha e o
-   usuário vê erro — mas o e-mail de aviso já saiu, porque as duas coisas
-   correm em paralelo. Ou seja, mesmo no pior cenário a clínica fica sabendo
-   do interessado e consegue retornar o contato. O keep-alive
+   usuário vê erro — o pedido não fica salvo em lugar nenhum. O keep-alive
    (app/api/keepalive/route.ts) existe justamente para esse cenário não
-   acontecer; isto aqui é a rede embaixo da rede.
+   acontecer. O visitante sempre tem o WhatsApp como caminho alternativo
+   (o botão flutuante e o "Confirmar pelo WhatsApp" pós-envio não dependem
+   desta rota).
    -------------------------------------------------------------------------- */

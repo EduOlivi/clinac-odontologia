@@ -12,12 +12,11 @@ import { MAX_TURNSTILE_TOKEN_LENGTH } from "./leads";
    best-effort em Cloudflare Workers (contador por isolate, isolates são
    reciclados e espalhados) e que o honeypot `_gotcha` só pega o bot que
    preenche todo campo que encontra no HTML. Um script que monta o JSON "na
-   mão" passa pelos dois. O prejuízo concreto verificado: `notifyNewLead()`
-   dispara um e-mail via Resend a cada envio aceito, e o plano free do Resend
-   corta por volta de 100 e-mails/dia — ou seja, ~100 requisições roteirizadas
-   queimam a cota do dia e, a partir dali, lead de paciente real não gera
-   aviso nenhum, sem ninguém perceber. E o painel /admin (sem paginação nem
-   busca, por decisão de escopo) fica soterrado de lixo.
+   mão" passa pelos dois. O prejuízo concreto verificado: cada envio aceito
+   grava uma linha em `public.leads` — ou seja, ~100 requisições roteirizadas
+   sujam a tabela de leads sem ninguém perceber. E o painel /admin (sem
+   paginação nem busca, por decisão de escopo) fica soterrado de lixo,
+   empurrando os leads reais para fora da tela.
 
    Turnstile ataca a origem do problema ("isto é um navegador com uma pessoa
    atrás?") em vez de contar requisições. É gratuito e vive na MESMA conta
@@ -29,20 +28,19 @@ import { MAX_TURNSTILE_TOKEN_LENGTH } from "./leads";
    --------------------------------------------------------
    Em app/api/leads/route.ts a verificação roda DEPOIS das checagens baratas
    (content-type, rate limit, teto de corpo, honeypot) e ANTES de
-   `validateLeadPayload`, do insert e — principalmente — do `notifyNewLead`.
-   Um desafio ausente/reprovado precisa custar ZERO e-mail. Se um dia alguém
-   mover esta chamada para depois do disparo do e-mail, o achado de segurança
-   volta inteiro; existe teste automatizado travando exatamente isso em
-   app/api/leads/route.test.ts ("Resend NÃO é chamado quando o Turnstile
-   falha").
+   `validateLeadPayload` e do insert. Um desafio ausente/reprovado precisa
+   custar ZERO escrita no banco. Se um dia alguém mover esta chamada para
+   depois do insert, o achado de segurança volta inteiro; existe teste
+   automatizado travando exatamente isso em app/api/leads/route.test.ts
+   ("o insert NÃO é chamado quando o Turnstile falha").
 
    POSTURA NA AUSÊNCIA DE CONFIGURAÇÃO: NEGAR
    ------------------------------------------
    Sem `TURNSTILE_SECRET_KEY` em produção, esta função NEGA (`nao-configurado`)
    em vez de deixar passar. Deixar passar seria recriar em silêncio exatamente
    o buraco que este arquivo existe para fechar — e "em silêncio" é a parte
-   pior: ninguém descobriria até a cota de e-mail queimar de novo. A
-   consequência é explícita e precisa ser sabida por quem for lançar o site:
+   pior: ninguém descobriria até o painel /admin/leads encher de lixo de novo.
+   A consequência é explícita e precisa ser sabida por quem for lançar o site:
    ENQUANTO A CHAVE NÃO FOR CADASTRADA, O FORMULÁRIO NÃO ACEITA ENVIO (o
    visitante recebe uma mensagem que o manda para o WhatsApp, que continua
    funcionando). Ver docs/DEPLOY.md, seção "Cloudflare Turnstile".
@@ -201,14 +199,11 @@ export async function verifyTurnstile(token: unknown, ip?: string): Promise<Turn
    do Worker, `verifyTurnstile` devolve `indisponivel` e a rota RECUSA o envio
    (503). É deliberado: é a mesma postura de negar por padrão do resto do
    projeto, e o custo de errar para o outro lado é assimétrico — deixar passar
-   durante a indisponibilidade é abrir de novo, sem aviso, o caminho de
-   queimar a cota de e-mail.
+   durante a indisponibilidade é abrir de novo, sem aviso, o caminho de sujar
+   o banco de leads.
 
    O que segura o prejuízo desse cenário é o desenho da página, não este
    arquivo: o formulário mostra a falha e aponta para o WhatsApp, que é o
    canal preferido da clínica de qualquer forma, e o WhatsApp não depende de
-   nada disto. Se um dia isso se mostrar frequente o bastante para incomodar
-   (o log `lead_turnstile_indisponivel` é o que responde essa pergunta), a
-   conversa a ter é "aceitar o envio mas NÃO disparar o e-mail" — e não
-   "aceitar tudo", que joga fora a proteção inteira.
+   nada disto.
    -------------------------------------------------------------------------- */

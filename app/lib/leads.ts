@@ -10,9 +10,9 @@
    Por que validar tamanho e não só "existe": a revisão de segurança anterior
    deste projeto apontou que um POST direto na rota (o formulário do site não
    é o único cliente possível) pode mandar um "nome" de 10 KB. Sem limite,
-   isso vira lixo no banco de 500 MB do plano free e um e-mail de notificação
-   gigante. O banco também barra — mas barrar aqui devolve uma mensagem útil
-   em vez de um erro 500 do Postgres.
+   isso vira lixo no banco de 500 MB do plano free. O banco também barra —
+   mas barrar aqui devolve uma mensagem útil em vez de um erro 500 do
+   Postgres.
    ========================================================================== */
 
 /**
@@ -213,7 +213,7 @@ export type ValidationResult = { ok: true; data: LeadInput } | { ok: false; erro
  * O filtro de caracteres de controle é feito por code point (e não por regex
  * com escapes) porque o Postgres recusa o byte NUL em colunas `text` (erro
  * 22021) — isso viraria um 500 sem explicação — e porque o resto dos
- * controles só serve para bagunçar o e-mail de notificação e o painel.
+ * controles só serve para bagunçar o painel.
  */
 function clean(value: unknown): string {
   if (typeof value !== "string") return "";

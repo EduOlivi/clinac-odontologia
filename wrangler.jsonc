@@ -4,7 +4,7 @@
 	// ==========================================================================
 	// Gerado para o adapter OpenNext (@opennextjs/cloudflare). Este arquivo é
 	// COMMITADO — por isso só pode conter configuração pública. Nenhum segredo
-	// (chave do Supabase, do Resend, KEEPALIVE_SECRET) vai aqui: eles são
+	// (chave do Supabase, KEEPALIVE_SECRET) vai aqui: eles são
 	// `wrangler secret put`, gravados criptografados do lado da Cloudflare e
 	// nunca aparecem neste repositório nem em `wrangler whoami`/logs.
 	// Ver docs/DEPLOY.md para o passo a passo completo (primeiro deploy,
@@ -27,7 +27,7 @@
 		"nodejs_compat",
 		// Bloqueia o Worker de fazer fetch para IPs privados/loopback da rede
 		// interna da Cloudflare — não muda nada para este site (só fala com
-		// Supabase/Resend, ambos públicos), é postura padrão recomendada.
+		// o Supabase, público), é postura padrão recomendada.
 		"global_fetch_strictly_public"
 	],
 
@@ -99,13 +99,7 @@
 		"KEEPALIVE_ENDPOINT_PATH": "/api/keepalive",
 
 		// Mesma lógica para a rota de backup — não é segredo, é só o caminho.
-		"BACKUP_EXPORT_ENDPOINT_PATH": "/api/backup-export",
-
-		// Decisão de compliance (ver .env.example e app/lib/notify.ts): o
-		// e-mail de aviso de novo lead NÃO inclui o tratamento de interesse
-		// (dado de saúde, LGPD art. 11) por padrão. Mudar isto é decisão de
-		// compliance, não de infraestrutura — não altere sem alinhar com eles.
-		"LEAD_EMAIL_INCLUDE_HEALTH_DATA": "false"
+		"BACKUP_EXPORT_ENDPOINT_PATH": "/api/backup-export"
 	},
 
 	// ---------------------------------------------------------------------

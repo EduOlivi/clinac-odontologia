@@ -309,10 +309,10 @@ export default function BookingForm() {
           Por que o texto fala em transferência internacional sem afirmar um
           país: a região do projeto Supabase ainda não foi escolhida pelo dono
           do site (ver o bloqueador na seção 4.1 da política). Mesmo no melhor
-          cenário (banco em São Paulo), Resend (EUA), Cloudflare Turnstile
-          (rede global) e o backup em R2 (sem região na América do Sul)
-          mantêm a transferência internacional existindo — por isso ela é
-          declarada aqui em qualquer hipótese.
+          cenário (banco em São Paulo), Cloudflare Turnstile (rede global) e
+          o backup em R2 (sem região na América do Sul) mantêm a transferência
+          internacional existindo — por isso ela é declarada aqui em qualquer
+          hipótese.
 
           SE ESTE TEXTO MUDAR DE SUBSTÂNCIA: bumpe CURRENT_POLICY_VERSION em
           app/lib/leads.ts e o `value` do input escondido logo abaixo. */}

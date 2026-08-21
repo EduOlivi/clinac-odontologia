@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /* ==========================================================================
-   Testes de integração leve de POST /api/leads — SEM Supabase/Resend reais
+   Testes de integração leve de POST /api/leads — SEM Supabase real
    ==========================================================================
    O QUE ISTO COBRE (e por que é o teste mais importante do repo)
    ----------------------------------------------------------------
@@ -15,31 +15,30 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
    O QUE ISTO NÃO COBRE (e por quê)
    ---------------------------------
-   `createServiceRoleClient` (Supabase) e `notifyNewLead` (Resend) são
-   mockados — não existem credenciais reais de Supabase/Resend para este
-   projeto ainda (ver README, seção de pendências), e mesmo que existissem,
-   um teste automatizado não deveria gravar linhas de verdade num banco de
-   produção a cada `npm test`. O que SE testa aqui é o comportamento da rota
-   diante de cada resultado possível desses dois lados (sucesso, erro,
-   exceção) — a parte que é código deste projeto. A verificação de que o
-   Supabase real aceita o INSERT e as RLS policies aplicam corretamente
-   fica para supabase/tests/rls_leads.test.sql (ver relatório de qa) e para
-   um teste manual ponta-a-ponta assim que o dono do site criar as contas.
+   `createServiceRoleClient` (Supabase) é mockado — não existem credenciais
+   reais de Supabase para este projeto ainda (ver README, seção de
+   pendências), e mesmo que existissem, um teste automatizado não deveria
+   gravar linhas de verdade num banco de produção a cada `npm test`. O que
+   SE testa aqui é o comportamento da rota diante de cada resultado possível
+   do insert (sucesso, erro, exceção) — a parte que é código deste projeto.
+   A verificação de que o Supabase real aceita o INSERT e as RLS policies
+   aplicam corretamente fica para supabase/tests/rls_leads.test.sql (ver
+   relatório de qa) e para um teste manual ponta-a-ponta assim que o dono do
+   site criar as contas.
 
    O TURNSTILE TAMBÉM É MOCKADO — mas o que se testa dele é ORDEM, não a
    criptografia da Cloudflare
    -------------------------------------------------------------------------
    A chamada ao `siteverify` é interceptada no `globalThis.fetch`. O teste
-   que mais importa neste arquivo hoje é "Resend NÃO é chamado quando o
+   que mais importa neste arquivo hoje é "o insert NÃO é chamado quando o
    Turnstile falha": o achado de segurança que motivou o widget é que ~100
-   requisições roteirizadas queimam a cota diária de e-mail do plano free do
-   Resend. Se alguém mover a verificação do Turnstile para depois do disparo
-   do e-mail, o código continua "funcionando" e a proteção some inteira —
-   esse teste é o que trava isso.
+   requisições roteirizadas conseguiam sujar a tabela de leads e soterrar o
+   painel /admin/leads. Se alguém mover a verificação do Turnstile para
+   depois do insert, o código continua "funcionando" e a proteção some
+   inteira — esse teste é o que trava isso.
    ========================================================================== */
 
 const insertMock = vi.fn();
-const notifyNewLeadMock = vi.fn();
 /** Substitui `globalThis.fetch` — a única chamada de rede da rota é o siteverify. */
 const fetchMock = vi.fn();
 
@@ -47,10 +46,6 @@ vi.mock("../../lib/supabase/admin", () => ({
   createServiceRoleClient: () => ({
     from: () => ({ insert: insertMock }),
   }),
-}));
-
-vi.mock("../../lib/notify", () => ({
-  notifyNewLead: (...args: unknown[]) => notifyNewLeadMock(...args),
 }));
 
 const { POST } = await import("./route");
@@ -118,10 +113,8 @@ function makeRequest(body: unknown, opts: { ip?: string; contentType?: string; r
 
 beforeEach(() => {
   insertMock.mockReset();
-  notifyNewLeadMock.mockReset();
   fetchMock.mockReset();
   insertMock.mockResolvedValue({ error: null });
-  notifyNewLeadMock.mockResolvedValue({ sent: true });
 
   // Chave secreta explícita: sem ela, app/lib/turnstile.ts cairia na chave de
   // TESTE da Cloudflare fora de produção e o teste dependeria desse fallback
@@ -184,14 +177,13 @@ describe("POST /api/leads — contrato HTTP", () => {
     expect(insertMock).not.toHaveBeenCalled();
   });
 
-  it("honeypot preenchido: responde 201 de sucesso, mas NÃO insere nem notifica", async () => {
+  it("honeypot preenchido: responde 201 de sucesso, mas NÃO insere", async () => {
     const response = await POST(makeRequest({ ...VALID_BODY, _gotcha: "sou um bot" }));
     const json = (await response.json()) as { ok: boolean };
 
     expect(response.status).toBe(201);
     expect(json.ok).toBe(true);
     expect(insertMock).not.toHaveBeenCalled();
-    expect(notifyNewLeadMock).not.toHaveBeenCalled();
   });
 
   it("recusa corpo maior que o teto (MAX_BODY_BYTES) com 413, sem tentar fazer JSON.parse nele", async () => {
@@ -215,8 +207,8 @@ describe("POST /api/leads — contrato HTTP", () => {
   });
 });
 
-describe("POST /api/leads — Turnstile (o portão que protege a cota de e-mail)", () => {
-  it("recusa com 403 quando o token não vem no corpo — e NÃO chama o Resend nem o banco", async () => {
+describe("POST /api/leads — Turnstile (o portão que protege o banco de lixo)", () => {
+  it("recusa com 403 quando o token não vem no corpo — e NÃO grava no banco", async () => {
     const semToken = { ...VALID_BODY };
     delete (semToken as Record<string, unknown>)[TURNSTILE_TOKEN_FIELD];
 
@@ -227,9 +219,8 @@ describe("POST /api/leads — Turnstile (o portão que protege a cota de e-mail)
     expect(json.ok).toBe(false);
     expect(json.code).toBe("desafio");
     // ESTE é o ponto do achado de segurança: um envio sem desafio custa zero
-    // e-mail. Se este expect quebrar, a proteção contra queimar a cota do
-    // Resend com ~100 requisições roteirizadas foi desfeita.
-    expect(notifyNewLeadMock).not.toHaveBeenCalled();
+    // escrita no banco. Se este expect quebrar, a proteção contra sujar a
+    // tabela de leads com ~100 requisições roteirizadas foi desfeita.
     expect(insertMock).not.toHaveBeenCalled();
     // Token ausente nem chega a virar chamada de rede.
     expect(siteverifyCalls()).toBe(0);
@@ -238,11 +229,10 @@ describe("POST /api/leads — Turnstile (o portão que protege a cota de e-mail)
   it("recusa com 403 quando o token vem vazio", async () => {
     const response = await POST(makeRequest({ ...VALID_BODY, [TURNSTILE_TOKEN_FIELD]: "   " }));
     expect(response.status).toBe(403);
-    expect(notifyNewLeadMock).not.toHaveBeenCalled();
     expect(insertMock).not.toHaveBeenCalled();
   });
 
-  it("recusa com 403 quando o Cloudflare reprova o token — sem chamar o Resend", async () => {
+  it("recusa com 403 quando o Cloudflare reprova o token — sem gravar no banco", async () => {
     mockSiteverify(false, ["invalid-input-response"]);
 
     const response = await POST(makeRequest(VALID_BODY));
@@ -255,7 +245,6 @@ describe("POST /api/leads — Turnstile (o portão que protege a cota de e-mail)
     // preciso contornar".
     expect(json.error).not.toMatch(/invalid-input-response/);
     expect(siteverifyCalls()).toBe(1);
-    expect(notifyNewLeadMock).not.toHaveBeenCalled();
     expect(insertMock).not.toHaveBeenCalled();
   });
 
@@ -264,7 +253,7 @@ describe("POST /api/leads — Turnstile (o portão que protege a cota de e-mail)
 
     const response = await POST(makeRequest(VALID_BODY));
     expect(response.status).toBe(403);
-    expect(notifyNewLeadMock).not.toHaveBeenCalled();
+    expect(insertMock).not.toHaveBeenCalled();
   });
 
   it("recusa sem gastar chamada de rede quando o token passa do tamanho máximo documentado", async () => {
@@ -273,10 +262,10 @@ describe("POST /api/leads — Turnstile (o portão que protege a cota de e-mail)
 
     expect(response.status).toBe(403);
     expect(siteverifyCalls()).toBe(0);
-    expect(notifyNewLeadMock).not.toHaveBeenCalled();
+    expect(insertMock).not.toHaveBeenCalled();
   });
 
-  it("responde 503 (não 403) quando o siteverify está inalcançável — e ainda assim não notifica", async () => {
+  it("responde 503 (não 403) quando o siteverify está inalcançável — e ainda assim não grava", async () => {
     fetchMock.mockRejectedValue(new Error("falha de rede simulada"));
 
     const response = await POST(makeRequest(VALID_BODY));
@@ -287,17 +276,15 @@ describe("POST /api/leads — Turnstile (o portão que protege a cota de e-mail)
     // app/lib/turnstile.ts.
     expect(response.status).toBe(503);
     expect(json.code).toBe("indisponivel");
-    expect(notifyNewLeadMock).not.toHaveBeenCalled();
     expect(insertMock).not.toHaveBeenCalled();
   });
 
-  it("aceita, grava e notifica quando o token é aprovado", async () => {
+  it("aceita e grava quando o token é aprovado", async () => {
     const response = await POST(makeRequest(VALID_BODY));
 
     expect(response.status).toBe(201);
     expect(siteverifyCalls()).toBe(1);
     expect(insertMock).toHaveBeenCalledTimes(1);
-    expect(notifyNewLeadMock).toHaveBeenCalledTimes(1);
   });
 
   it("manda para o siteverify o token recebido e o IP do visitante", async () => {
@@ -319,7 +306,6 @@ describe("POST /api/leads — Turnstile (o portão que protege a cota de e-mail)
     expect(response.status).toBe(201); // sucesso falso, de propósito
     expect(siteverifyCalls()).toBe(0);
     expect(insertMock).not.toHaveBeenCalled();
-    expect(notifyNewLeadMock).not.toHaveBeenCalled();
   });
 
   it("o rate limit continua barrando ANTES do Turnstile", async () => {
@@ -348,7 +334,6 @@ describe("POST /api/leads — Turnstile (o portão que protege a cota de e-mail)
     expect(response.status).toBe(503);
     expect(json.code).toBe("indisponivel");
     expect(siteverifyCalls()).toBe(0);
-    expect(notifyNewLeadMock).not.toHaveBeenCalled();
     expect(insertMock).not.toHaveBeenCalled();
   });
 });
@@ -362,20 +347,5 @@ describe("POST /api/leads — falhas de dependência externa", () => {
 
     expect(response.status).toBe(503);
     expect(json.ok).toBe(false);
-  });
-
-  it("ainda responde 201 quando o e-mail de notificação falha, desde que o insert tenha funcionado", async () => {
-    notifyNewLeadMock.mockResolvedValue({ sent: false, reason: "erro-do-provedor", detail: "HTTP 500" });
-
-    const response = await POST(makeRequest(VALID_BODY));
-    expect(response.status).toBe(201);
-    expect(insertMock).toHaveBeenCalledTimes(1);
-  });
-
-  it("ainda responde 201 quando notifyNewLead lança uma exceção (não deve derrubar a requisição)", async () => {
-    notifyNewLeadMock.mockRejectedValue(new Error("falha de rede simulada"));
-
-    const response = await POST(makeRequest(VALID_BODY));
-    expect(response.status).toBe(201);
   });
 });
