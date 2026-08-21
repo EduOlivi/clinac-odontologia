@@ -291,7 +291,7 @@ export default function TermosPage() {
         <li>decisões tomadas exclusivamente com base no conteúdo informativo do site, sem consulta presencial;</li>
         <li>
           indisponibilidade, lentidão ou falha de serviços de terceiros (hospedagem e verificação
-          anti-robô, banco de dados, envio de e-mail, WhatsApp, provedores de e-mail);
+          anti-robô, banco de dados, WhatsApp);
         </li>
         <li>
           perda de solicitação de agendamento decorrente de falha técnica de terceiros ou de

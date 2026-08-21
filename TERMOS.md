@@ -205,8 +205,7 @@ Termos —, a Clínac não se responsabiliza por:
 - decisões tomadas exclusivamente com base no conteúdo informativo do site, sem
   consulta presencial;
 - indisponibilidade, lentidão ou falha de serviços de terceiros (hospedagem e
-  verificação anti-robô, banco de dados, envio de e-mail, WhatsApp, provedores
-  de e-mail);
+  verificação anti-robô, banco de dados, WhatsApp);
 - perda de solicitação de agendamento decorrente de falha técnica de terceiros
   ou de dados de contato incorretos informados pelo usuário;
 - conteúdo de sites de terceiros acessados a partir de links deste site.

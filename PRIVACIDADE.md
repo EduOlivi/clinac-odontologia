@@ -248,14 +248,6 @@ Não vendemos, alugamos nem cedemos seus dados pessoais a terceiros para fins
 comerciais. Não usamos seus dados para decisões automatizadas nem para criação
 de perfil.
 
-> **Nota interna, a remover antes de publicar.** O código ainda tem a
-> integração com a Resend (e uma chave de configuração,
-> `LEAD_EMAIL_INCLUDE_HEALTH_DATA`, que controlaria se o tratamento de
-> interesse iria no e-mail) — mas **desde 2026-08-20 nenhuma credencial da
-> Resend está configurada**, então nada é enviado por lá de fato. Se um dia a
-> clínica voltar a usar aviso por e-mail, isso volta a exigir uma decisão de
-> compliance e a reescrita desta seção e da 4.1.
-
 ### 4.1 Transferência internacional de dados (LGPD, art. 33)
 
 > **Decidido em 2026-08-19.** O projeto Supabase deste site foi criado na

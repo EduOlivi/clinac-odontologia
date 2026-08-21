@@ -525,16 +525,6 @@ export default function PrivacidadePage() {
         Não vendemos, alugamos nem cedemos seus dados pessoais a terceiros para fins comerciais.
         Não usamos seus dados para decisões automatizadas nem para criação de perfil.
       </p>
-      <div className={styles.warn}>
-        <strong>Nota interna, a remover antes de publicar.</strong> O código ainda tem a
-        integração com a Resend (e uma chave de configuração,{" "}
-        <code>LEAD_EMAIL_INCLUDE_HEALTH_DATA</code>, que controlaria se o tratamento de interesse
-        iria no e-mail) — mas <strong>desde 2026-08-20 nenhuma credencial da Resend está
-        configurada</strong>, então nada é enviado por lá de fato. Se um dia a clínica voltar a
-        usar aviso por e-mail, isso volta a exigir uma decisão de compliance e a reescrita desta
-        seção e da 4.1.
-      </div>
-
       <h3>4.1 Transferência internacional de dados (LGPD, art. 33)</h3>
       <div className={styles.warn}>
         <strong>Decidido em 2026-08-19.</strong> O projeto Supabase deste site foi criado na região{" "}
