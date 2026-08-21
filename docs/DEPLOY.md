@@ -28,7 +28,7 @@ Não existe ambiente de staging. Existe **um** ambiente (produção) mais o prev
 
 ## Primeiro deploy — passo a passo (o dono do site precisa rodar)
 
-Nenhum destes passos pode ser feito por um agente de IA: todos exigem login na sua própria conta Cloudflare/Supabase/Resend com suas credenciais reais.
+Nenhum destes passos pode ser feito por um agente de IA: todos exigem login na sua própria conta Cloudflare/Supabase com suas credenciais reais.
 
 ### 1. Login na Cloudflare
 
@@ -57,18 +57,13 @@ npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 npx wrangler secret put KEEPALIVE_SECRET
 npx wrangler secret put BACKUP_EXPORT_SECRET
 npx wrangler secret put TURNSTILE_SECRET_KEY
-npx wrangler secret put RESEND_API_KEY
-npx wrangler secret put LEAD_NOTIFICATION_FROM
-npx wrangler secret put LEAD_NOTIFICATION_TO
 ```
 
 `TURNSTILE_SECRET_KEY` exige ter criado o widget antes — ver a seção **"Cloudflare Turnstile"** logo abaixo, e note que a *sitekey* (a outra metade do par) **não** entra aqui: ela é pública e precisa estar presente no *build*, não no runtime.
 
-Onde conseguir cada valor: ver `.env.example` (comentário acima de cada variável — inclui onde no painel do Supabase/Resend achar a chave, e o comando para gerar `KEEPALIVE_SECRET`/`BACKUP_EXPORT_SECRET`, que **devem ser dois valores aleatórios diferentes entre si**, não o mesmo texto reaproveitado).
+Onde conseguir cada valor: ver `.env.example` (comentário acima de cada variável — inclui onde no painel do Supabase achar a chave, e o comando para gerar `KEEPALIVE_SECRET`/`BACKUP_EXPORT_SECRET`, que **devem ser dois valores aleatórios diferentes entre si**, não o mesmo texto reaproveitado).
 
-`RESEND_API_KEY`/`LEAD_NOTIFICATION_FROM`/`LEAD_NOTIFICATION_TO` são opcionais — sem eles o site funciona, só não chega e-mail de aviso de lead novo (ver `.env.example`).
-
-**Por que estes viram secret e não `vars` em `wrangler.jsonc`**: são credenciais de verdade (chave de acesso ao banco, chave de API de e-mail) ou destinatários pessoais (e-mail da recepção) — `vars` em `wrangler.jsonc` é texto plano, committado no repositório público. `NEXT_PUBLIC_SITE_URL`, `KEEPALIVE_ENDPOINT_PATH`, `BACKUP_EXPORT_ENDPOINT_PATH` e `LEAD_EMAIL_INCLUDE_HEALTH_DATA` ficam em `vars` porque não são segredo: a primeira já é pública por definição (prefixo `NEXT_PUBLIC_`), as duas seguintes são só um caminho de URL, e a última é um *feature flag* de compliance, não uma credencial.
+**Por que estes viram secret e não `vars` em `wrangler.jsonc`**: são credenciais de verdade (chave de acesso ao banco) — `vars` em `wrangler.jsonc` é texto plano, committado no repositório público. `NEXT_PUBLIC_SITE_URL`, `KEEPALIVE_ENDPOINT_PATH` e `BACKUP_EXPORT_ENDPOINT_PATH` ficam em `vars` porque não são segredo: a primeira já é pública por definição (prefixo `NEXT_PUBLIC_`), as outras duas são só um caminho de URL.
 
 ### 4. Conferir a lista de secrets cadastrados
 
@@ -100,7 +95,7 @@ Ver a seção **"Cloudflare Turnstile"** abaixo — é passo obrigatório antes 
 
 ## Segredos: CI × Worker (por que são coisas diferentes)
 
-O GitHub Actions **nunca** recebe `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY` nem nenhum outro segredo do site. Ele só recebe `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` — o suficiente para autenticar `wrangler deploy`, nada mais. Os segredos do site em si moram só do lado da Cloudflare (passo 3 acima), gravados uma vez, e o deploy publica código novo sem nunca precisar reenviá-los. Menos lugares com a chave do banco = menos superfície.
+O GitHub Actions **nunca** recebe `SUPABASE_SERVICE_ROLE_KEY` nem nenhum outro segredo do site. Ele só recebe `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` — o suficiente para autenticar `wrangler deploy`, nada mais. Os segredos do site em si moram só do lado da Cloudflare (passo 3 acima), gravados uma vez, e o deploy publica código novo sem nunca precisar reenviá-los. Menos lugares com a chave do banco = menos superfície.
 
 ---
 
@@ -150,13 +145,9 @@ A Cloudflare também tem **Workers Builds** — conectar o repositório GitHub d
 | `BACKUP_EXPORT_SECRET` | secret | sim | Cron semanal → `/api/backup-export` |
 | `TURNSTILE_SECRET_KEY` | secret | **sim** (sem ela o formulário nega tudo) | `/api/leads` (verificação anti-bot) |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | **ambiente de BUILD** (não é secret nem `vars`) | **sim** | `app/components/BookingForm.tsx` (widget no navegador) |
-| `RESEND_API_KEY` | secret | recomendado | `/api/leads` (aviso por e-mail) |
-| `LEAD_NOTIFICATION_FROM` | secret | recomendado | idem |
-| `LEAD_NOTIFICATION_TO` | secret | recomendado | idem |
-| `NEXT_PUBLIC_SITE_URL` | `vars` (wrangler.jsonc) | sim | canonical/OG, link do painel no e-mail |
+| `NEXT_PUBLIC_SITE_URL` | `vars` (wrangler.jsonc) | sim | canonical/OG |
 | `KEEPALIVE_ENDPOINT_PATH` | `vars` | não (tem default) | `workers/entry.ts` |
 | `BACKUP_EXPORT_ENDPOINT_PATH` | `vars` | não (tem default) | `workers/entry.ts` |
-| `LEAD_EMAIL_INCLUDE_HEALTH_DATA` | `vars` | não (default `false`) | `/api/leads` (decisão de compliance) |
 
 Fonte de verdade de cada variável (o que é, onde obter o valor): `.env.example`.
 
@@ -185,7 +176,7 @@ Os dois chamam o próprio Worker por **service binding** (`WORKER_SELF_REFERENCE
 
 1. **O free tier do KV tem um teto de 1.000 escritas por dia, por CONTA (todos os namespaces somados)** — não por namespace, não por endpoint (https://developers.cloudflare.com/kv/platform/limits/). O limite hoje configurado em `/api/leads` já permite 5 envios por IP a cada 10 min; um único IP insistindo no limite por um dia inteiro (144 janelas × 5 = até ~720 escritas) já consome boa parte da cota diária de TODA a conta sozinho — e qualquer coisa que se pareça com o ataque que o rate limit existe para conter (múltiplos IPs, ou um bot mais paciente) estoura os 1.000 escritos/dia rapidamente. Nesse momento o KV passa a **recusar escrita** — ou seja, o próprio mecanismo de defesa quebra durante um ataque, exatamente o momento em que mais precisa funcionar. É um penhasco, não uma rampa, e ele fica embaixo do pé bem onde o ataque aconteceria.
 2. **KV é eventualmente consistente** (propagação global pode levar até ~60s) — um atacante distribuído por vários data centers furaria o limite dentro dessa janela de propagação de qualquer forma, então nem resolve por completo o problema que o rate limit em memória já tem hoje (isolates diferentes = contadores diferentes).
-3. **O verdadeiro problema não é "quanto custa" — é "o que sobra depois".** Nenhum provedor desta stack cobra por estourar cota no plano free (Supabase, Resend e Workers recusam/degradam, não faturam — ver comentário original em `rate-limit.ts`). O prejuízo real de um flood é lixo no banco de leads (dado de saúde) e cota de e-mail do Resend queimada. Contra isso, o remédio certo é resolver na origem ("isto é um bot?") em vez de contar requisições: **Cloudflare Turnstile**. **Isto agora está implementado** — ver a seção abaixo. O rate limit em memória continua onde está, como primeira camada barata contra duplo-clique e bot burro; ele deixou de ser a única linha de defesa.
+3. **O verdadeiro problema não é "quanto custa" — é "o que sobra depois".** Nenhum provedor desta stack cobra por estourar cota no plano free (Supabase e Workers recusam/degradam, não faturam — ver comentário original em `rate-limit.ts`). O prejuízo real de um flood é lixo no banco de leads (dado de saúde). Contra isso, o remédio certo é resolver na origem ("isto é um bot?") em vez de contar requisições: **Cloudflare Turnstile**. **Isto agora está implementado** — ver a seção abaixo. O rate limit em memória continua onde está, como primeira camada barata contra duplo-clique e bot burro; ele deixou de ser a única linha de defesa.
 
 Se o volume de leads um dia justificar um limitador realmente distribuído mesmo com o Turnstile no lugar, a interface `RateLimitStore` continua pronta para receber uma implementação em Durable Object (consistência forte, ao contrário do KV) — mas isso é passo posterior, não recomendado agora para um site recém-lançado sem tráfego real ainda.
 
@@ -197,7 +188,7 @@ Se o volume de leads um dia justificar um limitador realmente distribuído mesmo
 
 ### O que é e por que existe
 
-O `/api/leads` já tinha content-type check, rate limit por IP, teto de corpo, honeypot `_gotcha` e validação server-side. A revisão de segurança mostrou que nada disso segura o caso que importa: um script que monta o JSON "na mão" pula o honeypot (que só pega bot que preenche todo campo do HTML) e fura o rate limit (best-effort em Workers — isolates separados, e trocar de IP zera). Consequência concreta e verificada: cada envio aceito dispara um e-mail via Resend, cujo plano free corta por volta de **100 e-mails/dia**. Ou seja, ~100 requisições roteirizadas queimam a cota do dia e, a partir dali, **lead de paciente real não gera aviso nenhum, sem ninguém perceber** — e o painel `/admin/leads` (sem paginação nem busca, por decisão de escopo) fica soterrado de linhas falsas empurrando os leads reais para fora da tela.
+O `/api/leads` já tinha content-type check, rate limit por IP, teto de corpo, honeypot `_gotcha` e validação server-side. A revisão de segurança mostrou que nada disso segura o caso que importa: um script que monta o JSON "na mão" pula o honeypot (que só pega bot que preenche todo campo do HTML) e fura o rate limit (best-effort em Workers — isolates separados, e trocar de IP zera). Consequência concreta e verificada: cada envio aceito grava uma linha em `public.leads`. Ou seja, ~100 requisições roteirizadas sujam a tabela de leads e **o painel `/admin/leads`** (sem paginação nem busca, por decisão de escopo) **fica soterrado de linhas falsas**, empurrando os leads reais para fora da tela.
 
 Turnstile foi escolhido em vez de um limitador distribuído porque ataca a pergunta certa ("tem uma pessoa num navegador do outro lado?"), é gratuito, e vive na **mesma conta Cloudflare que já hospeda o Worker** — nenhum fornecedor novo entra no fluxo, o que importa aqui porque este formulário trata dado de saúde (LGPD art. 11) e cada terceiro a mais é uma conversa de compliance a mais.
 
@@ -226,7 +217,7 @@ Para o deploy pelo CI, a sitekey é uma **GitHub Actions *variable*** (não um *
 
 ### Postura na ausência de configuração: NEGAR
 
-Sem `TURNSTILE_SECRET_KEY` em produção, `/api/leads` responde **503** e não grava nem notifica nada. Não é bug: deixar passar recriaria em silêncio exatamente o buraco que o Turnstile fecha, e "em silêncio" é a parte pior — ninguém descobriria até a cota de e-mail queimar de novo.
+Sem `TURNSTILE_SECRET_KEY` em produção, `/api/leads` responde **503** e não grava nada. Não é bug: deixar passar recriaria em silêncio exatamente o buraco que o Turnstile fecha, e "em silêncio" é a parte pior — ninguém descobriria até o painel encher de lixo de novo.
 
 O que o visitante vê nesse cenário é uma mensagem apontando o **WhatsApp**, que continua funcionando e é o canal preferido da clínica de qualquer forma. Ou seja: o pior caso de "esqueci de configurar" é perder o formulário, não perder o contato.
 
@@ -240,7 +231,7 @@ O que o visitante vê nesse cenário é uma mensagem apontando o **WhatsApp**, q
 
 ### Modo de falha: `siteverify` fora do ar
 
-Se o endpoint de verificação da Cloudflare ficar inalcançável, a rota **recusa** os envios (503) em vez de deixar passar — mesma postura de negar por padrão do resto do projeto, e o custo de errar para o outro lado é assimétrico. O que segura o prejuízo é o desenho da página (a mensagem aponta o WhatsApp), não o código. Se algum dia o log `lead_turnstile_indisponivel` aparecer com frequência que incomode, a conversa a ter é *"aceitar o envio mas não disparar o e-mail"* — e não *"aceitar tudo"*, que joga fora a proteção inteira.
+Se o endpoint de verificação da Cloudflare ficar inalcançável, a rota **recusa** os envios (503) em vez de deixar passar — mesma postura de negar por padrão do resto do projeto, e o custo de errar para o outro lado é assimétrico. O que segura o prejuízo é o desenho da página (a mensagem aponta o WhatsApp), não o código.
 
 ### Dev local: chaves de teste, sem precisar de conta
 
@@ -264,7 +255,7 @@ Confirmado contra a documentação atual do Supabase (https://supabase.com/docs/
 
 `app/api/backup-export/route.ts` (nova rota, chamada pelo cron semanal acima): lê `select * from leads`, grava um JSON (`{ gerado_em, total, linhas }`) no bucket R2 `BACKUPS_BUCKET` (`clinac-odontologia-backups`, criado no passo 2 do primeiro deploy), e apaga os dumps mais antigos além dos 8 mais recentes (~2 meses de histórico, rotativo).
 
-**Por que R2 e não e-mail.** Mandar o dump por Resend seria mais simples de configurar, mas copiaria dado de saúde (LGPD art. 11 — o campo `tratamento`) para mais um terceiro (os servidores do Resend) e para a caixa postal da clínica, de forma automática e recorrente — exatamente a mesma categoria de decisão que `app/lib/notify.ts` já deixa explicitamente para compliance decidir para um único lead por vez (`LEAD_EMAIL_INCLUDE_HEALTH_DATA`). Fazer isso sozinho para o banco inteiro, toda semana, sem essa conversa, não é uma decisão de infraestrutura. R2 fica dentro da mesma conta Cloudflare que já é confiada com os secrets do Worker — não introduz um novo terceiro nem uma nova transferência internacional a mais do que já existe.
+**Por que R2 e não e-mail.** Mandar o dump por e-mail seria mais simples de configurar, mas copiaria dado de saúde (LGPD art. 11 — o campo `tratamento`) para mais um terceiro (o provedor de e-mail) e para a caixa postal da clínica, de forma automática e recorrente, toda semana, sem uma decisão de compliance por trás — não é uma decisão de infraestrutura. R2 fica dentro da mesma conta Cloudflare que já é confiada com os secrets do Worker — não introduz um novo terceiro nem uma nova transferência internacional a mais do que já existe.
 
 **Custo.** Gratuito com folga: R2 free = 10 GB de armazenamento e 1M operações de escrita + 10M de leitura por mês; um dump semanal de uma tabela de leads deste porte (algumas dezenas/centenas de linhas) fica na casa de poucos KB a poucas centenas de KB por arquivo, e a rotação para 8 arquivos mantém o total sempre pequeno.
 
@@ -309,7 +300,7 @@ Leva segundos — a Cloudflare mantém as versões anteriores do Worker já publ
 ## Monitoramento / uptime / erros
 
 - **Workers Logs** (`observability.enabled: true` em `wrangler.jsonc`, já ligado): todo `console.log`/`console.error` das rotas e do `workers/entry.ts` aparece no painel (Workers & Pages → seu Worker → Logs) e via `npx wrangler tail` em tempo real. Retenção no plano free: **3 dias** (confirmado contra a documentação atual de pricing da Cloudflare — no plano Paid sobe para 7 dias). As rotas já logam em JSON estruturado (`evento: "lead_criado"`, `"keepalive_cron_falhou"`, `"backup_export_cron_ok"`, etc.) — é o que dá para investigar um incidente sem precisar reproduzir localmente, mas só dentro dessa janela de 3 dias.
-- **Sem alerta push nativo de erro configurado** — o plano free da Cloudflare não oferece um "me avise por e-mail quando aparecer um 500" pronto para este projeto (as categorias de alerta de tráfego/erro da Cloudflare — Traffic Monitoring, Advanced Error Rate Alert — exigem plano Enterprise). O mínimo funcional recomendado, gratuito, é um checador de uptime externo apontando para a home pública (ex. [UptimeRobot](https://uptimerobot.com) ou [Better Uptime](https://betteruptime.com), ambos com plano free — checagem a cada 5 min, alerta por e-mail se a home cair). **Isto não foi cadastrado nesta rodada** porque exige criar conta em mais um serviço de terceiro — mesma restrição de "não posso criar conta em nome do dono do site" que vale para Supabase/Resend/Cloudflare. Ficou pendente: o dono do site precisa criar a conta e apontar para a URL de produção.
+- **Sem alerta push nativo de erro configurado** — o plano free da Cloudflare não oferece um "me avise quando aparecer um 500" pronto para este projeto (as categorias de alerta de tráfego/erro da Cloudflare — Traffic Monitoring, Advanced Error Rate Alert — exigem plano Enterprise). O mínimo funcional recomendado, gratuito, é um checador de uptime externo apontando para a home pública (ex. [UptimeRobot](https://uptimerobot.com) ou [Better Uptime](https://betteruptime.com), ambos com plano free — checagem a cada 5 min, alerta por e-mail se a home cair). **Isto não foi cadastrado nesta rodada** porque exige criar conta em mais um serviço de terceiro — mesma restrição de "não posso criar conta em nome do dono do site" que vale para Supabase/Cloudflare. Ficou pendente: o dono do site precisa criar a conta e apontar para a URL de produção.
 - **DDoS/abuso**: Notifications → **HTTP DDoS Attack Alert** (Cloudflare, painel → Notifications → Add), disponível em todos os planos, gratuito — dispara quando a Cloudflare mitiga um ataque acima de 100 requisições/segundo. Não é específico deste site, mas é real, automático e não exige configuração de threshold.
 
 ---
@@ -320,10 +311,10 @@ Sendo preciso, porque "recebi um e-mail de aviso" e "o sistema não deixa passar
 
 - **Cloudflare Workers (requisições) — trava automática real, não é alerta**: o plano Free tem um teto rígido de **100.000 requisições/dia**. Passado isso, requisições adicionais são recusadas pela própria plataforma — não vira cobrança (o plano Free não tem cartão associado por padrão), vira indisponibilidade. Para o volume esperado de um site institucional de clínica local, esse teto está anos-luz de distância do tráfego real — mas é bom saber que ele existe como uma trava, não como um aviso: **não há e-mail avisando que o site está se aproximando do teto**, só o sintoma (visitante vendo erro) se algum dia for atingido.
 - **Cloudflare R2 (o bucket de backup) — sem trava automática, e o alerta "oficial" pode nem estar disponível neste plano**: R2 é cobrado por uso acima do free tier *se* houver um método de pagamento cadastrado na conta (necessário para habilitar R2 mesmo para uso 100% gratuito — ver passo 2 do primeiro deploy). A partir do momento em que existe cartão cadastrado, uma eventual explosão de uso *seria* cobrada — não existe um "corta o serviço automaticamente ao estourar o orçamento" nativo da Cloudflare para R2. O tipo de notificação que mais se aproxima disso ("Usage Based Billing", que avisa por e-mail ao cruzar um limite escolhido) **exige plano de zona Professional ou superior** — este projeto, sem domínio próprio configurado na Cloudflare ainda, provavelmente nem tem essa opção disponível. Na prática, o que protege este projeto de uma conta de R2 fora de controle não é um alerta — é o desenho: a única escrita em R2 é `/api/backup-export`, protegida por bearer secret, chamada só pelo cron semanal, escrevendo um arquivo pequeno e rotacionando para 8. Não há caminho de abuso externo que gere volume ali. Ainda assim: **recomendação para o dono do site** — dê uma olhada de vez em quando em painel Cloudflare → Billing → Usage (gratuito, sempre disponível, sem alerta automático) só para confirmar que continua em zero.
-- **Supabase / Resend (free)**: como o próprio `rate-limit.ts` já registra, os dois recusam/degradam ao estourar cota do plano free — não faturam automaticamente sem upgrade manual do dono da conta. Não existe alerta proativo nativo do Supabase no plano free para "spike de escrita". A defesa real contra o padrão de abuso mais provável (flood de envios de formulário) é o **Cloudflare Turnstile** (seção própria acima), verificado **antes** de qualquer e-mail ser disparado — precisamente porque a cota que queima primeiro é a do Resend (~100 e-mails/dia), e queimá-la significa parar de receber aviso de lead **real**. Rate limit por IP e honeypot continuam como camadas baratas na frente dele, não como a defesa principal.
+- **Supabase (free)**: como o próprio `rate-limit.ts` já registra, o plano recusa/degrada ao estourar cota — não fatura automaticamente sem upgrade manual do dono da conta. Não existe alerta proativo nativo do Supabase no plano free para "spike de escrita". A defesa real contra o padrão de abuso mais provável (flood de envios de formulário) é o **Cloudflare Turnstile** (seção própria acima), verificado **antes** de qualquer `INSERT` — precisamente para não deixar a tabela de leads virar lixo e o painel `/admin/leads` esconder os leads **reais** atrás de linhas falsas. Rate limit por IP e honeypot continuam como camadas baratas na frente dele, não como a defesa principal.
 - **Criação de conta (Supabase Auth)**: o painel Supabase → Authentication → Sign In/Providers → "Allow new users to sign up" precisa estar **desligado** (a allowlist `admin_users` já impede leitura de dado mesmo com cadastro aberto, mas desligar evita lixo em `auth.users`) — passo manual já deixado pelo backend em `supabase/migrations/20260814120000_leads.sql`, seção 5. **Confirmar que este passo foi feito** é a defesa real contra "spike de criação de conta"; não há alerta Cloudflare-side para isso, porque não é um recurso da Cloudflare.
 
-Resumindo para quem só quer a resposta direta: **a única trava verdadeiramente automática nesta stack é o teto de 100k req/dia do Workers Free — o resto é ou "recusa sem cobrar" (Supabase/Resend), ou "sem trava mas com uso desenhado para nunca chegar perto" (R2), ou "depende de um passo manual que precisa ser confirmado" (desligar cadastro público no Supabase Auth).**
+Resumindo para quem só quer a resposta direta: **a única trava verdadeiramente automática nesta stack é o teto de 100k req/dia do Workers Free — o resto é ou "recusa sem cobrar" (Supabase), ou "sem trava mas com uso desenhado para nunca chegar perto" (R2), ou "depende de um passo manual que precisa ser confirmado" (desligar cadastro público no Supabase Auth).**
 
 ---
 
@@ -335,7 +326,6 @@ Resumindo para quem só quer a resposta direta: **a única trava verdadeiramente
 2. **Custom Domain do Worker** — painel → Workers & Pages → este Worker → Settings → Domains & Routes → Add Custom Domain → `www.dominio.com.br` (e/ou o apex `dominio.com.br`). A Cloudflare cria o registro DNS e o certificado TLS automaticamente ao vincular.
 3. **Redirecionamento apex ↔ www** — decidir qual é o canônico (recomendação: `www.dominio.com.br`, já é o que `NEXT_PUBLIC_SITE_URL` assume) e configurar uma Bulk Redirect Rule (gratuita, painel → Rules → Redirect Rules) do outro para o canônico. Sem isso, o site "funciona pela metade": alguém que digitar sem o `www` (ou com, se for o contrário) não cai em lugar nenhum ou cai numa versão não-canônica sem redirecionar.
 4. **Atualizar `NEXT_PUBLIC_SITE_URL`** em `wrangler.jsonc` (`vars`) para o domínio real, e redeployar.
-5. **Atualizar o domínio do Resend** (`.env.example`, seção Resend) para o mesmo domínio, se ainda não estiver — os registros SPF/DKIM do Resend são por domínio.
 
 Documentar aqui **o que aponta para onde**, para o mantenedor solo não precisar reconstruir esse contexto: depois do passo 2, o domínio aponta para o Worker via o binding de Custom Domain (não é um CNAME manual que alguém precise lembrar de renovar) — TLS é gerenciado pela Cloudflare automaticamente enquanto o domínio permanecer na conta Cloudflare com o Custom Domain vinculado.
 
@@ -345,7 +335,7 @@ Documentar aqui **o que aponta para onde**, para o mantenedor solo não precisar
 
 Cloudflare Workers executa **na borda, globalmente** — não existe uma "região" fixa como acontece com uma instância de servidor tradicional ou uma função serverless regional. Uma requisição de um visitante em Belo Horizonte é processada pelo data center da Cloudflare mais próximo dele (tipicamente já no Brasil), não por um servidor central único. Isso é uma característica de arquitetura do produto, não uma configuração que este projeto liga/desliga.
 
-**Relevância para a análise de LGPD/consentimento**: o Worker em si não *armazena* nada — ele processa a requisição e fala com o Supabase (banco, região a confirmar — ver pendência do backend para São Paulo/`sa-east-1`) e opcionalmente com o Resend/R2. O dado em repouso continua vivendo onde esses serviços vivem, não "no Worker". Mas o *processamento* (o código que lê o formulário, valida, decide o que fazer) roda em múltiplos pontos geograficamente distribuídos globalmente por definição do produto — isso é uma informação diferente de "onde o banco fica" e pode ser relevante para o texto de consentimento/política de privacidade descrever com precisão onde/como o dado é *processado* versus onde é *armazenado*.
+**Relevância para a análise de LGPD/consentimento**: o Worker em si não *armazena* nada — ele processa a requisição e fala com o Supabase (banco, região a confirmar — ver pendência do backend para São Paulo/`sa-east-1`) e, no cron semanal, com o R2. O dado em repouso continua vivendo onde esses serviços vivem, não "no Worker". Mas o *processamento* (o código que lê o formulário, valida, decide o que fazer) roda em múltiplos pontos geograficamente distribuídos globalmente por definição do produto — isso é uma informação diferente de "onde o banco fica" e pode ser relevante para o texto de consentimento/política de privacidade descrever com precisão onde/como o dado é *processado* versus onde é *armazenado*.
 
 **Resposta de compliance (2026-08-14)**: sim, muda — e já foi incorporado. `PRIVACIDADE.md` v2.0 passou a separar explicitamente **execução/processamento** (Cloudflare Workers, rede global, sem região fixa — seção 2.2, item 1) de **armazenamento** (Supabase, seção 4.1), e a listar Workers, R2 e Turnstile como três entradas distintas na tabela de operadores, porque as três têm perfis de localização diferentes. Duas consequências que continuam **abertas e bloqueiam a publicação da política**: (a) a **região do projeto Supabase** precisa ser escolhida — a política traz duas redações alternativas e não pode ir ao ar com as duas; (b) a **região do bucket R2** precisa ser confirmada (ver "Backup e recuperação de dados" acima).
 

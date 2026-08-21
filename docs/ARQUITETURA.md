@@ -19,8 +19,9 @@ Navegador do usuário
   ├── POST /api/leads  (formulário de agendamento, app/components/BookingForm.tsx)
   │     └─ Next.js rodando em Cloudflare Workers (via OpenNext)
   │           ├─ Cloudflare Turnstile (siteverify) ── confirma que é humano
-  │           ├─ Supabase (Postgres, chave service_role) ── grava o lead
-  │           └─ Resend (API HTTP) ── e-mail de aviso para a clínica
+  │           └─ Supabase (Postgres, chave service_role) ── grava o lead
+  │     (sucesso mostra o botão "Confirmar pelo WhatsApp" — link wa.me,
+  │      sem chamada de servidor nenhuma, é o visitante quem decide enviar)
   │
   └── /admin/*  (painel da equipe)
         └─ Next.js (Server Components + Server Actions)
@@ -49,7 +50,7 @@ Um pedido de avaliação enviado pelo formulário. Modelagem deliberadamente ras
 | `id` | `uuid` | gerado no servidor (`crypto.randomUUID()`), não no banco — ver "Um fluxo rastreado" abaixo |
 | `created_at` / `atualizado_em` | `timestamptz` | `atualizado_em` é mantido por trigger a cada `UPDATE` — é a data do último contato real, usada pelo expurgo de retenção (ver `supabase/data-subject-requests.sql`) |
 | `nome`, `telefone`, `melhor_horario` | `text` | dado pessoal comum |
-| `tratamento` | `text` | **dado de saúde (LGPD art. 11)** — tratado como categoria especial em todo o resto do sistema (e-mail, logs, RLS) |
+| `tratamento` | `text` | **dado de saúde (LGPD art. 11)** — tratado como categoria especial em todo o resto do sistema (logs, RLS) |
 | `consentimento_lgpd` | `boolean not null` | `CHECK (... is true)` — impossível existir uma linha sem consentimento, mesmo pulando a rota |
 | `consentimento_marketing` | `boolean` | opcional, coletado separadamente do de saúde (exigência de finalidades distintas) |
 | `politica_versao` | `text` | qual versão de `PRIVACIDADE.md` foi aceita — rastreabilidade de consentimento (LGPD art. 8º §2º) |
@@ -86,9 +87,9 @@ Esta é a peça que a revisão de segurança apontou como a melhor decisão arqu
 - **Endereço**: `POST /api/leads` (`app/api/leads/route.ts`).
 - **Entrada**: JSON — `{ nome, telefone, melhor_horario, tratamento, consentimento_lgpd, consentimento_marketing, politica_versao, _gotcha, "cf-turnstile-response" }`. Contrato completo, com o motivo de cada campo, documentado no topo de `app/components/BookingForm.tsx` e de `app/api/leads/route.ts`.
 - **Saída**: sucesso `201 { ok: true }`. Falha `4xx/5xx { ok: false, error: string, code: string }` — `code` é um rótulo estável (`formato` | `limite` | `grande` | `desafio` | `validacao` | `indisponivel`) que o cliente usa para reagir de forma diferente sem casar string de mensagem; deliberadamente não carrega o motivo interno da recusa (isso fica só no log do servidor), para não virar um oráculo que ensina um atacante a contornar os filtros um a um.
-- **Quem pode chamar**: qualquer cliente na internet (é o formulário público) — a defesa não é autenticação, é uma cadeia de checagens em ordem crescente de custo: content-type → rate limit por IP (`app/lib/rate-limit.ts`, 5/10min, best-effort por isolate) → teto de corpo (4 KB) → honeypot `_gotcha` (responde sucesso falso, de propósito, para não ensinar o bot) → **Cloudflare Turnstile** (`app/lib/turnstile.ts`, o portão real) → validação de campo (`validateLeadPayload`). A posição do Turnstile *antes* do envio de e-mail é o ponto todo: ver "Jobs em segundo plano" abaixo.
-- **Como falha**: ver a lista de `code` acima. Casos notáveis: sem `TURNSTILE_SECRET_KEY` em produção, a rota nega **tudo** com `503`/`desafio` (negar por padrão — deixar passar recriaria em silêncio o buraco que o Turnstile fecha); se o Supabase estiver pausado por inatividade, o `INSERT` falha mas o e-mail de aviso **já foi disparado** (rodam em paralelo), então a clínica ainda fica sabendo do interessado mesmo no pior caso.
-- **O que muda**: grava uma linha em `public.leads` e dispara (sem bloquear a resposta ao usuário) um e-mail via Resend. Uma falha no e-mail nunca derruba a gravação do lead — e-mail é notificação, não é a fonte da verdade.
+- **Quem pode chamar**: qualquer cliente na internet (é o formulário público) — a defesa não é autenticação, é uma cadeia de checagens em ordem crescente de custo: content-type → rate limit por IP (`app/lib/rate-limit.ts`, 5/10min, best-effort por isolate) → teto de corpo (4 KB) → honeypot `_gotcha` (responde sucesso falso, de propósito, para não ensinar o bot) → **Cloudflare Turnstile** (`app/lib/turnstile.ts`, o portão real) → validação de campo (`validateLeadPayload`). A posição do Turnstile *antes* do insert é o ponto todo: ver "Jobs em segundo plano" abaixo.
+- **Como falha**: ver a lista de `code` acima. Casos notáveis: sem `TURNSTILE_SECRET_KEY` em produção, a rota nega **tudo** com `503`/`desafio` (negar por padrão — deixar passar recriaria em silêncio o buraco que o Turnstile fecha); se o Supabase estiver pausado por inatividade, o `INSERT` falha e a rota responde erro — o visitante ainda tem o WhatsApp (botão flutuante) como caminho alternativo, que não depende desta rota.
+- **O que muda**: grava uma linha em `public.leads`. Sem aviso por e-mail — a clínica decidiu (2026-08-20) usar só o botão "Confirmar pelo WhatsApp" que a página mostra após o envio.
 
 #### `GET|POST /api/keepalive` e `GET|POST /api/backup-export`
 
@@ -114,7 +115,6 @@ Leitura da lista de leads (`app/admin/leads/page.tsx`) segue a mesma régua: `cr
 | Serviço | Chamado por | Direção | O que trafega |
 |---|---|---|---|
 | **Cloudflare Turnstile** (`siteverify`) | `app/lib/turnstile.ts` | server → Cloudflare | token do widget + IP do visitante; nunca dado do formulário |
-| **Resend** (`POST /emails`) | `app/lib/notify.ts` | server → Resend | nome, telefone, melhor horário; `tratamento` **só se** `LEAD_EMAIL_INCLUDE_HEALTH_DATA=true` (default `false`) |
 | **Supabase** (Postgres + Auth, via `@supabase/supabase-js` / `@supabase/ssr`) | `app/api/*`, `app/admin/*`, `middleware.ts` | server → Supabase | todo o dado do lead (via `service_role` no insert) ou o subconjunto que a RLS libera (via sessão) |
 | **Cloudflare R2** | `app/api/backup-export/route.ts` | server → R2 (mesma conta Cloudflare) | dump completo semanal de `leads`, incluindo `tratamento` |
 
@@ -126,13 +126,12 @@ Dois crons, definidos em `wrangler.jsonc` e roteados por `workers/entry.ts` (o a
 
 - **Keep-alive (diário)** — `GET /api/keepalive`. O Supabase free pausa um projeto depois de 7 dias sem atividade; um site de clínica local pode passar uma semana sem nenhum lead. Sem isso, o formulário quebraria justamente para o primeiro visitante depois do silêncio. A rota faz uma contagem trivial (`head: true`) — nenhuma linha trafega, é só para o projeto registrar atividade.
 - **Backup export (semanal)** — `GET /api/backup-export`. O plano free do Supabase **não tem backup automático** (confirmado contra a documentação do Supabase — só Pro/Team/Enterprise). Sem essa rota, a única cópia dos leads seria a tabela em produção: reverter um deploy não desfaz uma migração ruim ou um `DELETE` sem `WHERE`. A rota lê `leads` inteira e grava um JSON no bucket R2 `BACKUPS_BUCKET`, mantendo só os 8 dumps mais recentes (~2 meses, decidido por compliance — guardar mais não serve à finalidade de recuperação de falha recente e só aumentaria a superfície de vazamento de dado de saúde). **Pendência de compliance**: a Cloudflare não oferece região sul-americana para R2, então o backup fica fora do Brasil mesmo que o banco esteja em São Paulo — ver checklist de pendências no `README.md`.
-- **Notificação por e-mail (por requisição, não por cron)** — `app/lib/notify.ts`, chamado dentro de `POST /api/leads`. Roda em paralelo com o `INSERT` (não depois): o `.catch` fica preso na mesma linha da chamada de propósito, porque uma rejeição sem handler no meio de um `await` em Cloudflare Workers pode derrubar a requisição inteira. Uma falha de e-mail nunca derruba o lead já gravado.
 
 ---
 
 ## Consentimento e LGPD
 
-O desenho de consentimento no formulário (dois checkboxes separados, versão da política gravada pelo servidor, dado de saúde omitido do e-mail por padrão) está comentado em detalhe em `app/lib/leads.ts`, `app/components/BookingForm.tsx` e `app/lib/notify.ts` — o raciocínio completo de cada decisão vive no código, perto de onde ela é aplicada, para não divergir do comportamento real.
+O desenho de consentimento no formulário (dois checkboxes separados, versão da política gravada pelo servidor) está comentado em detalhe em `app/lib/leads.ts` e `app/components/BookingForm.tsx` — o raciocínio completo de cada decisão vive no código, perto de onde ela é aplicada, para não divergir do comportamento real.
 
 O conteúdo legal em si — quem é o controlador, quais operadores recebem o quê, prazo de retenção, base legal de cada tratamento, transferência internacional — é responsabilidade de [`PRIVACIDADE.md`](../PRIVACIDADE.md) e [`TERMOS.md`](../TERMOS.md) (espelhadas em `app/privacidade/page.tsx` e `app/termos/page.tsx`). Este documento **não duplica** esse conteúdo — ele muda de fonte única para não divergir. Dois pontos que a arquitetura precisa que quem for mexer no código saiba, porque conectam decisão técnica a texto legal:
 
@@ -143,15 +142,15 @@ O conteúdo legal em si — quem é o controlador, quais operadores recebem o qu
 
 ## Um fluxo rastreado ponta a ponta: agendamento pelo formulário
 
-Este é o caminho que exercita mais partes do sistema de uma vez — do clique do usuário até o e-mail chegar na clínica e o painel refletir o novo pedido.
+Este é o caminho que exercita mais partes do sistema de uma vez — do clique do usuário até o painel refletir o novo pedido.
 
 1. **Usuário preenche o formulário** na home (`app/components/BookingForm.tsx`), marca o checkbox `consentimento_lgpd` (obrigatório — HTML5 `required` bloqueia o submit sem JS precisar entrar em ação) e resolve o widget do Turnstile (`app/components/TurnstileWidget.tsx`), que guarda um token de uso único em estado do React.
 2. **Clique em "Solicitar avaliação"** dispara `handleSubmit`. Sem sitekey configurada ou sem token do Turnstile ainda resolvido, o formulário nem tenta a rede — mostra a mensagem de erro (com alternativa de WhatsApp) na hora.
 3. **Requisição**: `fetch('/api/leads', { method: 'POST', body: JSON.stringify(payload) })`, com timeout de 15s via `AbortController` e trava contra clique duplo (`sending` desabilita o botão).
 4. **No servidor** (`app/api/leads/route.ts`), em ordem: content-type → rate limit por IP → teto de corpo → honeypot `_gotcha` (bot recebe sucesso falso e some, sem aprender nada) → **Turnstile** (`verifyTurnstile`, chama o `siteverify` da Cloudflare) → `validateLeadPayload` (`app/lib/leads.ts`, que também decide o `politica_versao` real, ignorando o que o cliente mandou).
-5. **Grava e avisa em paralelo**: um `id` é gerado no servidor (`crypto.randomUUID()`) antes de qualquer operação, para que o e-mail possa citá-lo sem esperar o `INSERT` terminar. `notifyNewLead()` (Resend) dispara já, com `.catch` preso na mesma linha; o `INSERT` no Supabase (via `service_role`, `app/lib/supabase/admin.ts`) roda ao lado.
-6. **A resposta depende só do banco**: se o e-mail falhar mas o `INSERT` funcionar, a rota ainda responde sucesso — o lead é a fonte da verdade, o e-mail é efeito colateral. Se o `INSERT` falhar (ex. projeto Supabase pausado), a rota responde erro **mesmo que o e-mail já tenha saído** — então, no pior caso, a clínica ainda sabe que alguém tentou agendar.
-7. **UI atualiza**: `showFeedback`-equivalente no React mostra a mensagem de sucesso/erro (`role="status" aria-live="polite"`), o formulário é limpo e o Turnstile pede um token novo (o antigo já foi consumido — a Cloudflare recusa reuso).
+5. **Grava o lead**: um `id` é gerado no servidor (`crypto.randomUUID()`) e o `INSERT` no Supabase roda (via `service_role`, `app/lib/supabase/admin.ts`).
+6. **A resposta depende só do banco**: se o `INSERT` falhar (ex. projeto Supabase pausado), a rota responde erro. Se funcionar, responde sucesso e o React monta o link `wa.me` do botão "Confirmar pelo WhatsApp" (`buildWhatsAppUrl`, `app/lib/site-config.ts`) com nome, tratamento e melhor horário já preenchidos — sem nenhuma chamada de servidor, é o visitante quem decide clicar.
+7. **UI atualiza**: `showFeedback`-equivalente no React mostra a mensagem de sucesso/erro (`role="status" aria-live="polite"`) e o botão do WhatsApp quando aplicável, o formulário é limpo e o Turnstile pede um token novo (o antigo já foi consumido — a Cloudflare recusa reuso).
 8. **A equipe vê o pedido** ao abrir `/admin/leads` (`app/admin/leads/page.tsx`): a página lê `leads` com a **sessão do usuário logado** (chave `anon`), e a RLS do Postgres decide se aquela sessão está em `admin_users`. Mudar o status (`StatusForm` → `updateLeadStatus` em `app/admin/actions.ts`) é um Server Action que faz `UPDATE ... SET status = ...`, novamente pela sessão do usuário — nunca `service_role`.
 
 Se qualquer etapa entre 3 e 6 falhar, o padrão se repete com uma mensagem de erro específica (ver a lista de `code` na seção "Superfície de integração" acima), sempre com uma alternativa de contato (WhatsApp) — nunca uma falha silenciosa.
@@ -189,7 +188,7 @@ Duas correções, herdadas do site estático original e preservadas na migraçã
 
 Resumo — detalhes de comando e o que cada camada cobre estão no [`README.md`](../README.md#-como-rodar-as-verificações):
 
-- **Vitest** (`npm run test`) cobre a lógica de validação/autorização do caminho crítico: `app/lib/leads.test.ts` (o portão de consentimento LGPD, `validateLeadPayload`), `app/api/leads/route.test.ts` (a rota `POST /api/leads` de ponta a ponta, Supabase/Resend mockados) e `app/lib/rate-limit.test.ts`.
+- **Vitest** (`npm run test`) cobre a lógica de validação/autorização do caminho crítico: `app/lib/leads.test.ts` (o portão de consentimento LGPD, `validateLeadPayload`), `app/api/leads/route.test.ts` (a rota `POST /api/leads` de ponta a ponta, Supabase mockado) e `app/lib/rate-limit.test.ts`.
 - **`scripts/check-app.js`** — checagem mecânica zero-dependência (rotas-chave existem, `consentimento_lgpd` continua `required`, `alt` de `<img>`, toda env var documentada em `.env.example`). Não navega o site, não substitui QA manual.
 - **`supabase/tests/rls_leads.test.sql`** — testa as RLS policies e `GRANT`s direto no Postgres (não via app): `anon` não lê/escreve nada, `authenticated` fora de `admin_users` vê zero linhas, `authenticated` na allowlist só altera a coluna `status`. Não roda em CI (exige Postgres real) — rodar manualmente antes do lançamento e após qualquer mudança na migração de RLS.
 - Não há teste de UI/browser (Playwright etc.) — decisão deliberada de custo/benefício para este porte de projeto, coberta por um checklist manual (ver `README.md`).

@@ -1,6 +1,6 @@
 # 🦷 Clínac Odontologia
 
-Site institucional e captação de agendamentos para uma clínica odontológica — página única (one-page) com apresentação dos tratamentos, diferenciais da clínica, depoimentos e um formulário de agendamento que grava o pedido num banco de verdade e avisa a equipe por e-mail. Painel administrativo simples (`/admin`) para a equipe acompanhar e atualizar o status de cada pedido.
+Site institucional e captação de agendamentos para uma clínica odontológica — página única (one-page) com apresentação dos tratamentos, diferenciais da clínica, depoimentos e um formulário de agendamento que grava o pedido num banco de verdade e oferece confirmação pelo WhatsApp. Painel administrativo simples (`/admin`) para a equipe acompanhar e atualizar o status de cada pedido.
 
 ![Status](https://img.shields.io/badge/status-quase_pronto_(ver_pend%C3%AAncias)-C97B2E?style=flat-square)
 ![Next.js](https://img.shields.io/badge/Next.js_16-white?style=flat-square&logo=next.js&logoColor=000)
@@ -24,7 +24,7 @@ Este projeto começou como um site 100% estático (HTML/CSS/JS + Formspree) e fo
 - **Hero animado**, seções de tratamentos (organizados por notação dentária FDI), institucional, depoimentos e carrossel de implantes — herdadas do site original, agora como componentes React.
 - **Formulário de agendamento** (`app/components/BookingForm.tsx`) que grava o pedido direto no banco via `POST /api/leads`, protegido por Cloudflare Turnstile (anti-bot), rate limit por IP, honeypot e validação em duas camadas (servidor + banco).
 - **Fluxo de consentimento LGPD** no formulário: checkbox obrigatório para dado de saúde (com transferência internacional declarada), checkbox opcional para marketing, e versão da política gravada pelo servidor — nunca pelo cliente.
-- **Aviso por e-mail** (Resend) a cada novo pedido, sem o dado de saúde por padrão.
+- **Confirmação pelo WhatsApp**: depois de um envio aceito, o site mostra um botão "Confirmar pelo WhatsApp" com mensagem pré-preenchida — link `wa.me`, sem nenhuma API/automação por trás, é o visitante quem decide enviar.
 - **Painel `/admin`** — login via Supabase Auth, lista de pedidos e atualização de status, com autorização garantida por Row Level Security no Postgres (não por lógica no servidor Next.js).
 - **Backup semanal automático** dos pedidos para um bucket Cloudflare R2 (o Supabase free não faz backup automático).
 - **Keep-alive diário** para o projeto Supabase não pausar por inatividade.
@@ -55,7 +55,6 @@ Para o "como" e o "porquê" de cada uma dessas peças, ver [`docs/ARQUITETURA.md
 | Framework | [Next.js 16](https://nextjs.org) (App Router, TypeScript, React 19) | SSR/Server Actions/Route Handlers num único framework |
 | Hospedagem | [Cloudflare Workers](https://workers.cloudflare.com), via [OpenNext](https://opennext.js.org/cloudflare) (`@opennextjs/cloudflare`) | Plano free sem restrição de uso comercial (diferente do Hobby da Vercel) — ver [`docs/DEPLOY.md`](docs/DEPLOY.md) |
 | Banco de dados | [Supabase](https://supabase.com) (Postgres) | Auth + Row Level Security para o painel, sem precisar montar autorização própria |
-| E-mail transacional | [Resend](https://resend.com) | API HTTP simples (Workers não abre socket SMTP) |
 | Anti-bot | [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) | Portão real contra envio automatizado no `/api/leads` |
 | Backup | Cloudflare R2 | O Supabase free não tem backup automático |
 | Testes | [Vitest](https://vitest.dev) + SQL de RLS via `psql` | Ver [Como rodar as verificações](#-como-rodar-as-verificações) |
@@ -94,8 +93,6 @@ Abra `http://localhost:3000`.
 | `SUPABASE_SERVICE_ROLE_KEY` | Sim, idem | Idem — nunca vaza para o cliente (`import "server-only"` trava isso no build) |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | **Não** — já vem com a chave de teste oficial da Cloudflare ("sempre aprova") | Troque só antes de publicar |
 | `TURNSTILE_SECRET_KEY` | **Não** — mesma lógica | Idem |
-| `RESEND_API_KEY` / `LEAD_NOTIFICATION_FROM` / `LEAD_NOTIFICATION_TO` | Não | Sem elas o site funciona, só não chega e-mail de aviso |
-| `LEAD_EMAIL_INCLUDE_HEALTH_DATA` | Não (default `false`) | Decisão de compliance, não de infraestrutura |
 | `KEEPALIVE_SECRET` / `BACKUP_EXPORT_SECRET` | Não, para `next dev` | Só importam para os crons em produção — ver `docs/DEPLOY.md` |
 | `NEXT_PUBLIC_SITE_URL` | Não | Tem fallback no código |
 
@@ -111,8 +108,8 @@ Para rodar o Worker de verdade (não só `next dev`) localmente, ver `npm run pr
 npm run typecheck    # tsc --noEmit
 npm run lint         # eslint (inclui jsx-a11y)
 npm run test         # vitest — valida o portão de consentimento LGPD e a
-                      # rota POST /api/leads de ponta a ponta (Supabase/Resend
-                      # mockados; não precisa de credenciais reais)
+                      # rota POST /api/leads de ponta a ponta (Supabase
+                      # mockado; não precisa de credenciais reais)
 npm run check        # scripts/check-app.js — checagem mecânica zero-dependência:
                       # rotas-chave existem, checkbox consentimento_lgpd
                       # continua `required`, alt de <img>, toda env var lida
@@ -123,12 +120,12 @@ npm run build:worker  # opennextjs-cloudflare build — a build real do Worker
 
 Os cinco primeiros comandos (`lint`, `typecheck`, `test`, `check`, `build`) são exatamente o job `verify` do CI (`.github/workflows/ci.yml`, que também roda `build:worker`) — rodar localmente antes de abrir um PR evita descobrir uma falha só depois do push.
 
-**Não precisa de nenhum setup adicional** para os comandos acima (nenhum emulador, nenhuma segunda instalação de dependências) — o Vitest mocka Supabase/Resend e usa as chaves de teste do Turnstile automaticamente.
+**Não precisa de nenhum setup adicional** para os comandos acima (nenhum emulador, nenhuma segunda instalação de dependências) — o Vitest mocka o Supabase e usa as chaves de teste do Turnstile automaticamente.
 
 ### O que isso não cobre (de propósito)
 
 - **RLS do Postgres** (quem pode ler/escrever `leads`) — `supabase/tests/rls_leads.test.sql`, direto contra um Postgres real (local via `supabase start` + Docker, ou um projeto Supabase de teste/descartável). Instruções completas no topo do próprio arquivo. Não roda em CI hoje — **precisa ser rodado manualmente antes do lançamento e após qualquer mudança na migração de RLS**.
-- **Ponta a ponta contra Supabase/Resend reais** — sem credenciais reais ainda (ver pendências abaixo). Assim que existirem, um teste manual de fumaça (preencher o formulário de verdade, conferir o lead em `/admin/leads` e o e-mail de aviso) deve rodar pelo menos uma vez.
+- **Ponta a ponta contra Supabase real** — sem credenciais reais ainda (ver pendências abaixo). Assim que existirem, um teste manual de fumaça (preencher o formulário de verdade e conferir o lead em `/admin/leads`) deve rodar pelo menos uma vez.
 - **UI/browser** (responsividade real, foco visível, `prefers-reduced-motion`) — decisão deliberada de custo/benefício para este porte de site, não uma lacuna esquecida. Fica como checklist manual:
 
 <details>
@@ -138,7 +135,7 @@ Os cinco primeiros comandos (`lint`, `typecheck`, `test`, `check`, `build`) são
 - [ ] **Admin — autenticado mas fora da allowlist**: logar com uma conta que existe no Supabase Auth mas NÃO está em `admin_users` → tela mostra "sem permissão", não a tabela de leads.
 - [ ] **Admin — staff vê e atualiza**: logar com uma conta em `admin_users`, conferir que a lista aparece e que trocar o status de um lead persiste após recarregar.
 - [ ] **Booking — consentimento bloqueia envio de verdade**: no formulário renderizado, tentar enviar sem marcar o checkbox obrigatório → o navegador impede o submit.
-- [ ] **Booking — fumaça ponta a ponta**: com Supabase/Resend/Turnstile reais, preencher e enviar de verdade; conferir sucesso, lead em `/admin/leads` e e-mail de aviso.
+- [ ] **Booking — fumaça ponta a ponta**: com Supabase/Turnstile reais, preencher e enviar de verdade; conferir sucesso, lead em `/admin/leads` e o botão "Confirmar pelo WhatsApp" abrindo com a mensagem certa.
 - [ ] **Responsivo — booking e admin**: mobile (~375px), tablet (~768px) e desktop, sem overflow horizontal nem elemento inalcançável.
 - [ ] **Teclado — carrossel e menu**: navegar por Tab até os pontinhos do carrossel de implantes e o menu mobile; foco visível, Enter/Espaço ativam.
 - [ ] **`prefers-reduced-motion`**: ativar no SO/navegador e recarregar a home — a ilustração do hero aparece no estado final (visível), não travada em transparente.
@@ -157,7 +154,6 @@ clinac-odontologia/
 │   ├── lib/
 │   │   ├── env.ts                            # única porta de leitura de env vars (server-only)
 │   │   ├── leads.ts                          # tipos + validação, compartilhado cliente/servidor
-│   │   ├── notify.ts                         # aviso de novo lead (Resend)
 │   │   ├── turnstile.ts                      # verificação server-side do Turnstile
 │   │   ├── rate-limit.ts, site-config.ts
 │   │   └── supabase/
@@ -198,16 +194,15 @@ Estas são decisões e informações que **só o dono do site pode resolver** �
 ### Infraestrutura — criar as contas reais
 
 - [ ] **Supabase**: criar o projeto real. **Decisão obrigatória e bloqueadora de publicação da política de privacidade**: a região do projeto (`PRIVACIDADE.md` §4.1 traz duas redações alternativas — banco em São Paulo × banco fora do Brasil — e não pode ir ao ar com as duas). Depois de criado: rodar `supabase/migrations/20260814120000_leads.sql`, desligar "Allow new users to sign up" (Authentication → Sign In/Providers) e popular `admin_users` com a conta da equipe (passo a passo no fim do próprio arquivo de migração).
-- [ ] **Resend**: criar a conta real e **verificar um domínio de envio** (sem isso, o Resend só envia a partir de `onboarding@resend.dev` e só para o e-mail da própria conta — serve para testar, não para produção).
 - [ ] **Cloudflare Turnstile**: criar o widget real (painel Cloudflare → Turnstile → Add widget, modo Managed) — sem isso em produção, `TURNSTILE_SECRET_KEY` fica ausente e o formulário **nega todo envio** (comportamento deliberado, ver `docs/DEPLOY.md`).
 - [ ] **Região do bucket R2 (backup)**: confirmar no painel (R2 → bucket → Settings) qual região o bucket recebeu. A Cloudflare **não oferece região na América do Sul para R2** — então o backup semanal (que contém dado de saúde) fica fora do Brasil **independentemente** da região escolhida para o Supabase. Preencher `PRIVACIDADE.md` §4/§4.1 com o resultado.
-- [ ] **Todos os secrets do Worker**: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `KEEPALIVE_SECRET`, `BACKUP_EXPORT_SECRET`, `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `LEAD_NOTIFICATION_FROM`, `LEAD_NOTIFICATION_TO` via `wrangler secret put`, mais `NEXT_PUBLIC_TURNSTILE_SITE_KEY` como variável de **build** (GitHub Actions *variable*, não *secret* — ver `docs/DEPLOY.md`, seção "Cloudflare Turnstile"). Checklist completo com onde cada uma vive: `docs/DEPLOY.md` → "Variáveis de ambiente/secrets — checklist completo".
+- [ ] **Todos os secrets do Worker**: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `KEEPALIVE_SECRET`, `BACKUP_EXPORT_SECRET`, `TURNSTILE_SECRET_KEY` via `wrangler secret put`, mais `NEXT_PUBLIC_TURNSTILE_SITE_KEY` como variável de **build** (GitHub Actions *variable*, não *secret* — ver `docs/DEPLOY.md`, seção "Cloudflare Turnstile"). Checklist completo com onde cada uma vive: `docs/DEPLOY.md` → "Variáveis de ambiente/secrets — checklist completo".
 
 ### Segurança e QA — verificações ainda não executadas
 
 - [ ] Rodar `npm audit` e um secret-scan (ex. `gitleaks`/`trufflehog`) antes de ir ao ar — sinalizado pela revisão de segurança como não verificado ainda nesta rodada.
 - [ ] Rodar `supabase/tests/rls_leads.test.sql` contra um Postgres real (local via `supabase start`+Docker, ou um projeto Supabase de teste) — não foi possível executar durante esta rodada de QA por falta de Docker/Supabase CLI no ambiente. Rodar antes do lançamento e após qualquer mudança na migração de RLS.
-- [ ] Depois que as credenciais reais acima existirem: um teste manual de fumaça ponta a ponta (preencher o formulário de verdade, conferir o lead em `/admin/leads` e o e-mail chegando).
+- [ ] Depois que as credenciais reais acima existirem: um teste manual de fumaça ponta a ponta (preencher o formulário de verdade, conferir o lead em `/admin/leads` e o botão "Confirmar pelo WhatsApp").
 - [ ] (Recomendado, não bloqueador) Cadastrar um checador de uptime externo gratuito (ex. UptimeRobot) apontando para a home — a Cloudflare free não avisa proativamente sobre indisponibilidade. Ver `docs/DEPLOY.md`.
 
 ### Dados reais da clínica (hoje todos são placeholder)
@@ -225,7 +220,6 @@ Estas são decisões e informações que **só o dono do site pode resolver** �
 - [ ] **BLOQUEADOR — região do Supabase** (ver acima).
 - [ ] **BLOQUEADOR — região do bucket R2** (ver acima).
 - [ ] Se/quando uma ferramenta de analytics real for ligada (ver `docs/ARQUITETURA.md`), atualizar a §2.6 de `PRIVACIDADE.md` **na mesma mudança** — hoje ela afirma que o site não rastreia audiência e por isso não exibe banner de cookies; isso deixa de ser verdade se a ferramenta usar cookie/fingerprint.
-- [ ] Se `LEAD_EMAIL_INCLUDE_HEALTH_DATA` for ligada algum dia, reescrever a §4 da política **antes** — passaria a copiar dado de saúde para a Resend (EUA) e para a caixa postal da clínica.
 - [ ] Confirmar a URL pública estável de `/privacidade` e `/termos` depois que o domínio próprio existir, e apontar essa URL onde for exigida (ex.: rodapé, cadastro de app/loja se algum dia existir).
 - [ ] Publicar as páginas `/privacidade` e `/termos` como parte do próprio deploy do site é o caminho já implementado (não é um site separado) — não há pendência de "onde publicar", só de domínio final.
 
